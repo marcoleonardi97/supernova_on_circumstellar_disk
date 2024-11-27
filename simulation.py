@@ -36,6 +36,13 @@ sun.vx = 0. | units.kms
 sun.vy = 0. | units.kms
 sun.vz = 0. | units.kms
 
+# External supernova setup
+supernova_position = [0.5, 0.0, 0.0] | units.parsec  # Position relative to the disk
+shock_speed = 1e4 | units.kms  # Typical supernova shock speed
+explosion_energy = 1.0e+51 | units.erg
+ejecta_mass = 10 | units.MSun
+heavy_element_mass = 0.1 | units.MSun
+
 sph = Fi(convert)
 sph.parameters.use_hydro_flag = True
 sph.parameters.radiation_flag = False
@@ -52,17 +59,31 @@ supernova_time = 10. |units.yr
 supernova_triggered = False
 
 while time < tend:
-    if time >= supernova_time and not supernova_triggered:
-        print(f"Triggering supernova at {time}")
-        heavy_elements_mass = 0.01 | units.MSun # for example
-        ejecta_mass = 10 | units.MSun  # Total ejecta mass
-        inject_supernova_energy(gas, heavy_elements_mass,exploding_region=10 | units.AU)
-        sun.mass -= ejecta_mass  # Mass lost from the star
-        supernova_triggered = True
+    print(f"Triggering supernova at {time}")
+    heavy_elements_mass = 0.01 | units.MSun # for example
 
-    Q_values = compute_toomre_q(sph, gas, sun.mass)  
+    # This setup is for the host star going SN
+        #ejecta_mass = 10 | units.MSun  # Total ejecta mass 
+        #inject_supernova_energy(gas, heavy_elements_mass,exploding_region=10 | units.AU)
+        #sun.mass -= ejecta_mass  # Mass lost from the star
+
+    # This setup is for an external star going SN, which is what we want.
+    # We can trigger this immediately, as the shockwave still needs time to reach the disk 
+    # ps. not sure if this function works, probably not yet
+    inject_external_supernova(
+        gas_particles=gas,
+        supernova_position=supernova_position,
+        time=time,
+        explosion_energy=explosion_energy,
+        ejecta_mass=ejecta_mass,
+        heavy_element_mass=heavy_element_mass,
+        shock_speed=shock_speed
+    )
+
+    
+    Q_values = compute_toomre_q(sph, gas, sun.mass)  # probably not very accurate
     Q_history.append(np.mean(Q_values))
-    radii, metallicities = compute_metallicity_profile(gas)
+    radii, metallicities = compute_metallicity_profile(gas) # this works but maybe it's better to just focus on 1 or 2 heavy elements, like 60F or some typical SN injected elements
     Z_history.append(metallicities)
     
     sph.evolve_model(time)
@@ -78,6 +99,6 @@ while time < tend:
     plt.xlabel('AU')
     plt.savefig(f'{time}.png')
 
-frames = [f'{time} yr' for time in range(len(50))]
+frames = [f'{time} yr' for time in range(int(round(tend.number)))]
 animate_frames(frames, save_as='protodisk_sn')
 animate_2d_plot(range(len(50)), Q_history, save_as='disk_stability')
