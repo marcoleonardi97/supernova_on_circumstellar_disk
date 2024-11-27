@@ -99,6 +99,22 @@ while time < tend:
     plt.xlabel('AU')
     plt.savefig(f'{time}.png')
 
+    #  This is a very stupid way to animate the supernova hitting the disk
+    # we're going to have to model it properly using Fi or EVtwin
+    # we might have to bright the disk hydro to the shockwave hydro, but maybe it doesn't really matter
+    positions = gas.position.value_in(units.AU)
+    metallicities = gas.metallicity.value_in(units.none)
+    shock_radius = (shock_speed * time).value_in(units.AU)
+
+    ax.scatter(positions[:, 0], positions[:, 1], c=metallicities, cmap='plasma', s=1, alpha=0.5)
+    ax.add_artist(plt.Circle(supernova_position.value_in(units.AU), shock_radius, color='red', fill=False, linewidth=1))
+    ax.set_title(f"Time: {time}")
+    ax.set_xlabel("AU")
+    ax.set_ylabel("AU")
+
+ani = FuncAnimation(fig, update_plot, frames=int(tend.number), interval=100)
+ani.save('external_supernova_disk_impact.gif', writer='Pillow', fps=10)
+
 frames = [f'{time} yr' for time in range(int(round(tend.number)))]
 animate_frames(frames, save_as='protodisk_sn')
 animate_2d_plot(range(len(50)), Q_history, save_as='disk_stability')
