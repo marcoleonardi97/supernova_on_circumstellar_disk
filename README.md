@@ -9,6 +9,7 @@ Simulating the effects of a supernova explosion in the vicinity of a protoplanet
 5. Visualize the disk and results (animation of particle positions over time, stability of disk at different SN distances, abundance of heavy elements at different SN distances…)
 
 
+This is not what we want to do, just an example 
 50yr evolution around a $15M_\odot$ star |  Toomre Q Parameter
 :-------------------------:|:-------------------------:
 ![protodisk_with_big_SN](https://github.com/user-attachments/assets/7783ab68-66ac-4596-9d19-d4a923509a1b)  |  ![diskstability](https://github.com/user-attachments/assets/f80d806e-2a47-4e18-8688-a009c60bab45)
