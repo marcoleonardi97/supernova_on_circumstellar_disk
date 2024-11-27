@@ -39,7 +39,7 @@ def animate_frames(name, max, save_as):
     @ max (int): number of frames
     @ save_as (str): name of the final .gif
     """
-    frames = [f"{name}.png" for i in range(1,max+1)]
+    frames = [f"{name}.png" for name in range(1,max+1)]
     with imageio.get_writer(f"{save_as}.gif", mode='I', duration=0.1) as writer:
         for frame in frames:
             image = imageio.imread(frame)
