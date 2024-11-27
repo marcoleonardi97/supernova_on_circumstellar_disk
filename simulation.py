@@ -7,7 +7,7 @@ from amuse.units import nbody_system
 from amuse.ext.protodisk import ProtoPlanetaryDisk
 from amuse.datamodel import Particles
 
-from parameters_to_check import compute_toomre_q
+from parameters_to_check import compute_toomre_q, compute_metallicity_profile
 from plotting import make_denstiy_map
 from supernova import inject_supernova_energy
 
@@ -17,7 +17,8 @@ N = 20000
 time = 0 |units.yr
 tend = 50. | units.yr
 Mstar = 15. | units.MSun
-Q_history = []
+Q_history = [] # Q Parameter at each dt
+Z_history = [] # Metallicities at each dt
 
 convert = nbody_system.nbody_to_si(Mstar, 1. | units.AU)
 proto = ProtoPlanetaryDisk(
@@ -53,14 +54,16 @@ supernova_triggered = False
 while time < tend:
     if time >= supernova_time and not supernova_triggered:
         print(f"Triggering supernova at {time}")
-        
+        heavy_elements_mass = 0.01 | units.MSun # for example
         ejecta_mass = 10 | units.MSun  # Total ejecta mass
-        inject_supernova_energy(gas, exploding_region=10 | units.AU)
+        inject_supernova_energy(gas, heavy_elements_mass,exploding_region=10 | units.AU)
         sun.mass -= ejecta_mass  # Mass lost from the star
         supernova_triggered = True
 
     Q_values = compute_toomre_q(sph, gas, sun.mass)  
     Q_history.append(np.mean(Q_values))
+    radii, metallicities = compute_metallicity_profile(gas)
+    Z_history.append(metallicities)
     
     sph.evolve_model(time)
     print(f"Disk evolved to {time}")
