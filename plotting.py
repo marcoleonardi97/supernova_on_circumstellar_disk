@@ -32,14 +32,13 @@ def make_density_map(sph, N=100, L=1):
     return rhod, numpy.transpose(rho)
 
 
-def animate_frames(name, max, save_as):
+def animate_frames(frames, save_as):
     """
     Makes a .gif animation from a list of .png images.
     @ name (str): generator object that lists all of the frames
     @ max (int): number of frames
     @ save_as (str): name of the final .gif
     """
-    frames = [f"{name}.png" for name in range(1,max+1)]
     with imageio.get_writer(f"{save_as}.gif", mode='I', duration=0.1) as writer:
         for frame in frames:
             image = imageio.imread(frame)
