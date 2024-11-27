@@ -1,3 +1,13 @@
+import numpy
+from matplotlib import pyplot as plt
+from amuse.community.fi.interface import Fi
+from amuse.units import units, constants
+from amuse.units import nbody_system
+from amuse.ext.protodisk import ProtoPlanetaryDisk
+from amuse.datamodel import Particles
+from parameters import 
+
+
 N = 20000
 time = 0 |units.yr
 tend = 50. | units.yr
