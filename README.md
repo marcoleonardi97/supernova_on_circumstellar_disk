@@ -15,3 +15,9 @@ Simulating the effects of a supernova explosion in the vicinity of a protoplanet
 
 
 
+Initial Radial Z Profile |  Radial Z Profile after SN
+:-------------------------:|:-------------------------:
+![metallicity_0](https://github.com/user-attachments/assets/7f87ec16-a64e-4eac-b4fb-10fcb9d5b3a7) | ![metallicity_10](https://github.com/user-attachments/assets/c7009e26-f5b3-45f3-a53d-0db83bf48bdd)
+
+
+
