@@ -1,11 +1,16 @@
-import numpy
+import numpy as np
 from matplotlib import pyplot as plt
+
 from amuse.community.fi.interface import Fi
 from amuse.units import units, constants
 from amuse.units import nbody_system
 from amuse.ext.protodisk import ProtoPlanetaryDisk
 from amuse.datamodel import Particles
+
 from parameters_to_check import compute_toomre_q
+from plotting import make_denstiy_map
+from supernova import inject_supernova_energy
+
 
 
 N = 20000
@@ -62,9 +67,9 @@ while time < tend:
     time += 1. | units.yr
 
     L = 50
-    rhod, rho = make_map(sph, N=200, L=L)
+    rhod, rho = make_density_map(sph, N=200, L=L)
     plt.figure(figsize=(8, 8))
-    plt.imshow(numpy.log10(1.e-5 + rho.value_in(units.amu / units.cm**3)),
+    plt.imshow(np.log10(1.e-5 + rho.value_in(units.amu / units.cm**3)),
                   extent=[-L / 2, L / 2, -L / 2, L / 2], vmin=10, vmax=15)
     plt.title(f'Time: {time}')
     plt.xlabel('AU')
