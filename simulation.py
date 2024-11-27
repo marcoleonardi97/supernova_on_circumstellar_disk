@@ -7,9 +7,9 @@ from amuse.units import nbody_system
 from amuse.ext.protodisk import ProtoPlanetaryDisk
 from amuse.datamodel import Particles
 
-from parameters_to_check import compute_toomre_q, compute_metallicity_profile
-from plotting import make_denstiy_map
-from supernova import inject_supernova_energy
+from parameters_to_check import *
+from plotting import *
+from supernova import *
 
 
 
@@ -77,3 +77,7 @@ while time < tend:
     plt.title(f'Time: {time}')
     plt.xlabel('AU')
     plt.savefig(f'{time}.png')
+
+frames = [f'{time} yr' for time in range(len(50))]
+animate_frames(frames, save_as='protodisk_sn')
+animate_2d_plot(range(len(50)), Q_history, save_as='disk_stability')
