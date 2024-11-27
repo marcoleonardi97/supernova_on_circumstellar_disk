@@ -5,7 +5,7 @@ from amuse.units import units, constants
 from amuse.units import nbody_system
 from amuse.ext.protodisk import ProtoPlanetaryDisk
 from amuse.datamodel import Particles
-from parameters import 
+from parameters_to_check import compute_toomre_q
 
 
 N = 20000
