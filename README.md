@@ -1,6 +1,6 @@
 Outline
 
-Simulating the effects of a supernova explosion in the vicinity of a protoplanetary disk, focusing on the resulting dynamics and injection of heavy elements. 
+Simulating the effects of a supernova explosion in the vicinity of a protoplanetary disk ($< 1pc$), focusing on the resulting dynamics and injection of heavy elements. 
 
 1. Make a protoplanetary disk (maybe as a particles object with power law density profile)
 2.Inject supernova energy and model the interaction between the ejected nova mass and the disk
