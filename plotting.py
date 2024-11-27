@@ -64,8 +64,8 @@ def animate_2d_plot(x, y, save_as, xlab=None, ylab=None, title=None):
     
 
     def update(frame):
-        real_line.set_data(x[:frame], y[:frame])
-        return real_line,
+        line.set_data(x[:frame], y[:frame])
+        return line,
     
     # Create animation
     anim = FuncAnimation(fig, update, frames=len(x), interval=50, blit=True)
