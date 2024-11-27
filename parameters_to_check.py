@@ -40,3 +40,20 @@ def compute_toomre_q(sph, gas_particles, star_mass, gamma=1.0):
         Q_values.append(Q)
 
     return np.array(Q_values)
+
+
+def compute_metallicity_profile(gas_particles, bins=50):
+    radii = gas_particles.position.lengths()
+    metallicities = gas_particles.metallicity
+
+    radial_bins = np.linspace(0, max(radii).value_in(units.AU), bins+1) | units.AU
+    bin_centers = 0.5 * (radial_bins[:-1] + radial_bins[1])
+    mean_z = []
+
+    for i in range(bins):
+        in_bin = (radii >= radial_bins[i]) & (radii < radial_bins[i+1])
+        if in_bin.sum() > 0:
+            mean_z.append(metallicities[in_bin].mean())
+        else:
+            mean_z.append(0)
+    return bin_centers, metallicities
