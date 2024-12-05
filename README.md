@@ -1,12 +1,15 @@
-Outline
+Outline:
+https://docs.google.com/document/d/1dHtwYFsnluikh4RLamNygjsehVWr4a8ct8pp-gWv71c/edit?tab=t.0
 
 Simulating the effects of a supernova explosion in the vicinity of a protoplanetary disk ($< 1pc$), focusing on the resulting dynamics and injection of heavy elements. 
 
 1. Make a protoplanetary disk (maybe as a particles object with power law density profile)
 2.Inject supernova energy and model the interaction between the ejected nova mass and the disk
+2.5 (maybe model supernova irradiance if we can do it before christmas with the cluster computer)
 3.Inject heavy elements given a certain mixing fraction, ejected mass and set of isotopes 
 4. Evolve the disk with hydrodynamics simulator (Fi)
 5. Visualize the disk and results (animation of particle positions over time, stability of disk at different SN distances, abundance of heavy elements at different SN distances…)
+
 
 
 This is not what we want to do, just an example 
