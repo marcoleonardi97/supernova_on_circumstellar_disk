@@ -1,4 +1,4 @@
-Outline:
+Outline (old):
 https://docs.google.com/document/d/1dHtwYFsnluikh4RLamNygjsehVWr4a8ct8pp-gWv71c/edit?tab=t.0
 
 Simulating a supernova explosion in the vicinity of a proto-planetary disk, with and without an additional perturbing object. 
