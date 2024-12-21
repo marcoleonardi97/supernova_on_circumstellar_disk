@@ -69,16 +69,15 @@ def plot_system(save=False, save_name=None, time=None):
     l = 10
     plt.xlim(-l,l)
     plt.ylim(-l,l)
-    scatter(bodies.x.in_(units.AU), bodies.y.in_(units.AU))
-    scatter(primary.x, primary.y, c='r', label="Primary Star")
-    scatter(secondary.x, secondary.y, c='y', label="Secondary Star")
+    scatter(bodies.x.in_(units.AU), bodies.y.in_(units.AU), c='orange', alpha=0.5, s=10)
+    scatter(star.x, star.y, marker="*",c='r', s=120,label="Primary Star")
+    scatter(planet.x, planet.y, marker='*', c='y',s=120, label="Secondary Star")
     plt.legend()
     if time is not None:
-        plt.title(f"System at {time:.2f} Myr")
+        plt.title(f"Disk at {time:.2f} yr")
 
     if save:
         plt.savefig(save_name)
-
 
 ### Setting up the simulation workers (Ph4 and Fi) ###
 
