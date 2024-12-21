@@ -26,11 +26,9 @@ Example animations:
 :-------------------------:|:-------------------------:
 ![protodisk_with_big_SN](https://github.com/user-attachments/assets/7783ab68-66ac-4596-9d19-d4a923509a1b)  |  ![diskstability](https://github.com/user-attachments/assets/f80d806e-2a47-4e18-8688-a009c60bab45)
 
+Disk in a binary system made with the code in "perturbed_disk.py" over 1 year.
+![perturbed_disk_wide](https://github.com/user-attachments/assets/091c945b-b11d-4d12-b5ed-2e863b4afe3e)
 
-
-Initial Radial Z Profile |  Radial Z Profile after SN
-:-------------------------:|:-------------------------:
-![metallicity_0](https://github.com/user-attachments/assets/7f87ec16-a64e-4eac-b4fb-10fcb9d5b3a7) | ![metallicity_10](https://github.com/user-attachments/assets/c7009e26-f5b3-45f3-a53d-0db83bf48bdd)
 
 
 
