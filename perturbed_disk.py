@@ -116,6 +116,11 @@ gravhydro.timestep = 0.001 * Pinner # This is important and will cause errors in
 
 # Actual simulation code
 
+#Notes:
+# written like this, the simulation runs fairly quickly for 1 years, but it will take around 1h ~ 10 years. 
+# i'm assuming it's because i'm plotting the positions at each time step, maybe i'll just save them in a list and try to make it faster
+# especially if we increase the number of particles in the disk. 
+
 dtt = Pinner.number | units.s
 t_end = 100.0 | units.yr
 model_time = 0 | units.yr
