@@ -1,120 +1,171 @@
 import numpy as np
-from matplotlib import pyplot as plt
-
-from amuse.community.fi.interface import Fi
 from amuse.units import units, constants
-from amuse.units import nbody_system
+from amuse.plot import plot, scatter
 from amuse.ext.protodisk import ProtoPlanetaryDisk
-from amuse.datamodel import Particles
+from amuse.lab import nbody_system
+from matplotlib import pyplot as plt
+from amuse.ext.orbital_elements import new_binary_from_orbital_elements
+from amuse.community.ph4.interface import Ph4
+from amuse.community.fi.interface import Fi
+from amuse.couple import bridge
+from amuse.ext.composition_methods import *
 
-from parameters_to_check import *
-from plotting import *
-from supernova import *
 
 
+### Setting up the binary system and the disk ###
 
-N = 20000
-time = 0 |units.yr
-tend = 50. | units.yr
-Mstar = 15. | units.MSun
-Q_history = [] # Q Parameter at each dt
-Z_history = [] # Metallicities at each dt
+def orbital_period(Mtot, a):
+    return (((4 * numpy.pi**2) * a**3)/(constants.G * Mtot)).sqrt()
 
-convert = nbody_system.nbody_to_si(Mstar, 1. | units.AU)
-proto = ProtoPlanetaryDisk(
-    N, convert_nbody=convert, densitypower=1.5, Rmin=5, Rmax=20, q_out=1.)
-gas = proto.result
-gas.h_smooth = 0.06 | units.AU
 
-sun = Particles(1)
-sun.mass = Mstar
-sun.radius = 2. | units.AU
-sun.x = 0. | units.AU
-sun.y = 0. | units.AU
-sun.z = 0. | units.AU
-sun.vx = 0. | units.kms
-sun.vy = 0. | units.kms
-sun.vz = 0. | units.kms
+# We can play around with these
+M1 = 1.0 | units.MSun
+M2 = 1.0 | units.MJupiter 
+semi_a = 2 | units.au
+ecc = 0.6
+bodies = new_binary_from_orbital_elements(M1, M2, semi_a, ecc,
+                                         G=constants.G)
+bodies[0].name = "primary"
+bodies[1].name = "secondary"
+primary = bodies[bodies.name=="primary"]
+secondary = bodies[bodies.name=="secondary"]
+RH = semi_a * (1.0 - ecc) * (M2 / (3 * M1))**(1./3.)
+R = 1 | units.au
 
-# External supernova setup
-supernova_position = [0.5, 0.0, 0.0] | units.parsec  # Position relative to the disk
-shock_speed = 1e4 | units.kms  # Typical supernova shock speed
-explosion_energy = 1.0e+51 | units.erg
-ejecta_mass = 10 | units.MSun
-heavy_element_mass = 0.1 | units.MSun
+converter = nbody_system.nbody_to_si(M1, R)
+Ndisk = 1000
+Rin = 0.2 | units.AU
+Rout = 0.7 | units.AU
+Pinner = orbital_period(M1, Rin)
+Mdisk = 0.01 * Mstar
 
-sph = Fi(convert)
-sph.parameters.use_hydro_flag = True
-sph.parameters.radiation_flag = False
-sph.parameters.self_gravity_flag = True
-sph.parameters.gamma = 1.
-sph.parameters.isothermal_flag = True
-sph.parameters.integrate_entropy_flag = False
-sph.parameters.timestep = 0.125 | units.yr
+disk = ProtoPlanetaryDisk(Ndisk,
+                          convert_nbody=converter,
+                          Rmin=Rin/R,
+                          Rmax=Rout/R,
+                          q_out=10.0,
+                          discfraction=Mdisk/Mstar).result
+disk.name = "disk "
+disk.move_to_center()
+disk.position += star.position
+disk.velocity += star.velocity
 
-sph.gas_particles.add_particles(gas)
-sph.particles.add_particles(sun)
+masses = Mdisk / float(Ndisk)
+disk.mass = masses
+rho = 3.0 | (units.g / units.cm**3)
+disk.radius = (disk.mass / (4 * rho))**(1./3.)
 
-supernova_time = 10. |units.yr
-supernova_triggered = False
+bodies.add_particles(disk)
+bodies.move_to_center()
+star.move_to_center()
 
-while time < tend:
-    print(f"Triggering supernova at {time}")
-    heavy_elements_mass = 0.01 | units.MSun # for example
 
-    # This setup is for the host star going SN
-        #ejecta_mass = 10 | units.MSun  # Total ejecta mass 
-        #inject_supernova_energy(gas, heavy_elements_mass,exploding_region=10 | units.AU)
-        #sun.mass -= ejecta_mass  # Mass lost from the star
+def plot_system(save=False, save_name=None, time=None):
+    """
+    Simple 2D plotting of the bodies object to visualize it over time.
+    I'm currently using this function to save each plot as a frame and then stitch them together as a .gif
+    This works but I'm guessing is way more time consuming than having an update func() in pyplot animation. - Marco
+    """
+    l = 10
+    plt.xlim(-l,l)
+    plt.ylim(-l,l)
+    scatter(bodies.x.in_(units.AU), bodies.y.in_(units.AU))
+    scatter(primary.x, primary.y, c='r', label="Primary Star")
+    scatter(secondary.x, secondary.y, c='y', label="Secondary Star")
+    plt.legend()
+    if time is not None:
+        plt.title(f"System at {time:.2f} Myr")
 
-    # This setup is for an external star going SN, which is what we want.
-    # We can trigger this immediately, as the shockwave still needs time to reach the disk 
-    # ps. not sure if this function works, probably not yet
-    inject_external_supernova(
-        gas_particles=gas,
-        supernova_position=supernova_position,
-        time=time,
-        explosion_energy=explosion_energy,
-        ejecta_mass=ejecta_mass,
-        heavy_element_mass=heavy_element_mass,
-        shock_speed=shock_speed
-    )
+    if save:
+        plt.savefig(save_name)
 
+
+### Setting up the simulation workers (Ph4 and Fi) ###
+
+gravity = Ph4(converter)
+gravity.particles.add_particles(bodies)
+channel = {"from stars": bodies.new_channel_to(gravity.particles),
+            "to_stars": gravity.particles.new_channel_to(bodies)}
+
+hydro = Fi(converter, mode="openmp")
+hydro.parameters.use_hydro_flag = True
+hydro.parameters.radiation_flag = False
+hydro.parameters.gamma = 1
+hydro.parameters.isothermal_flag = True
+hydro.parameters.integrate_entropy_flag = False
+hydro.parameters.timestep = 0.01*Pinner 
+hydro.parameters.verbosity = 0
+hydro.parameters.eps_is_h_flag = False  # h_smooth is constant
+eps = 0.1 | units.au
+hydro.parameters.gas_epsilon = eps
+hydro.parameters.sph_h_const = eps * 5  # This works with 1000 particles, but it can run into problems in long simulation. Keep an eye on this if we get '-1' errors in Fi. -Marco
+hydro.particles.add_particles(disk)
+hydro.dm_particles.add_particles(secondary.as_set())
+channel.update({"from_disk": disk.new_channel_to(hydro.particles)})
+channel.update({"to_disk": hydro.particles.new_channel_to(disk)})
+channel.update({"from_moon": secondary.new_channel_to(hydro.dm_particles)})
+channel.update({"to_moon": hydro.dm_particles.new_channel_to(secondary)})
+
+### Setting up Bridge ###
+
+gravhydro = bridge.Bridge(use_threading=False)  # , method=SPLIT_4TH_S_M4)
+gravhydro.add_system(gravity, (hydro,))
+gravhydro.add_system(hydro, (gravity,))
+gravhydro.timestep = 0.001 * Pinner # This is important and will cause errors in long simulation if not set right.. with 0.001 and dt of 7*Pinner the simulation crashed after 9 years -Marco
+
+
+# Actual simulation code
+
+dtt = Pinner.number | units.s
+t_end = 100.0 | units.yr
+model_time = 0 | units.yr
+dt = 10.0 * dt  # Usually would be lower, but i'm increasing it to run the simulation for 100 years. Once i'm sure it works properly i'll try to do ~Myr
+plot_counter = 0
+
+while model_time < t_end:
+
+    model_time += dt
+    plot_counter += 1
     
-    Q_values = compute_toomre_q(sph, gas, sun.mass)  # probably not very accurate
-    Q_history.append(np.mean(Q_values))
-    radii, metallicities = compute_metallicity_profile(gas) # this works but maybe it's better to just focus on 1 or 2 heavy elements, like 60F or some typical SN injected elements
-    Z_history.append(metallicities)
+    print("Time:", model_time.in_(units.yr))  
+
+    gravhydro.evolve_model(model_time)
+    channel["to_stars"].copy()
+    channel["to_disk"].copy()
+    channel["to_moon"].copy()
+    fig = plt.figure()
+    plot_system(save=True, save_name=f"time_{plot_counter}.png", time=model_time.number)
     
-    sph.evolve_model(time)
-    print(f"Disk evolved to {time}")
-    time += 1. | units.yr
 
-    L = 50
-    rhod, rho = make_density_map(sph, N=200, L=L)
-    plt.figure(figsize=(8, 8))
-    plt.imshow(np.log10(1.e-5 + rho.value_in(units.amu / units.cm**3)),
-                  extent=[-L / 2, L / 2, -L / 2, L / 2], vmin=10, vmax=15)
-    plt.title(f'Time: {time}')
-    plt.xlabel('AU')
-    plt.savefig(f'{time}.png')
+gravity.stop()
+hydro.stop()
 
-    #  This is a very stupid way to animate the supernova hitting the disk
-    # we're going to have to model it properly using Fi or EVtwin
-    # we might have to bright the disk hydro to the shockwave hydro, but maybe it doesn't really matter
-    positions = gas.position.value_in(units.AU)
-    metallicities = gas.metallicity.value_in(units.none)
-    shock_radius = (shock_speed * time).value_in(units.AU)
 
-    ax.scatter(positions[:, 0], positions[:, 1], c=metallicities, cmap='plasma', s=1, alpha=0.5)
-    ax.add_artist(plt.Circle(supernova_position.value_in(units.AU), shock_radius, color='red', fill=False, linewidth=1))
-    ax.set_title(f"Time: {time}")
-    ax.set_xlabel("AU")
-    ax.set_ylabel("AU")
+# Animation 
 
-ani = FuncAnimation(fig, update_plot, frames=int(tend.number), interval=100)
-ani.save('external_supernova_disk_impact.gif', writer='Pillow', fps=10)
+import glob
+import os
+import imageio.v2 as imageio
+from matplotlib.animation import FuncAnimation, PillowWriter
 
-frames = [f'{time} yr' for time in range(int(round(tend.number)))]
-animate_frames(frames, save_as='protodisk_sn')
-animate_2d_plot(range(len(50)), Q_history, save_as='disk_stability')
+# -------------------- This code is only needed if we don't name the plots with plot_counter
+files = glob.glob("*.png")
+
+numbers = []
+#for f in files:
+#    numbers.append(float(f[5:12]))
+#ff = [y for _,y in sorted(zip(numbers, files))]
+# ---------------------
+
+
+n_frames = 517 # change with the number of plots 
+frames = [f"time_{i}." for i in range(1,n_frames)]
+
+with imageio.get_writer("perturbed_disk_long.gif", mode='I', duration=0.1) as writer:
+    for frame in frames:
+        image = imageio.imread(frame)
+        writer.append_data(image)
+
+# Clean up the directory 
+for frame in frames:
+    os.remove(frame)
