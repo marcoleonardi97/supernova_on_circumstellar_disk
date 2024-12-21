@@ -28,6 +28,7 @@ Disk in a binary system made with the code in "perturbed_disk.py" over 1 year.
 ![perturbed_disk_wide](https://github.com/user-attachments/assets/091c945b-b11d-4d12-b5ed-2e863b4afe3e)
 
 Typo ! This should be years, not Myr
+
 ![perturbed_disk_long-Copy1 (1)](https://github.com/user-attachments/assets/aabb8ea4-5da1-4cb2-b25a-9240f564ef98)
 
 
