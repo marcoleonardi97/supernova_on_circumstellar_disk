@@ -20,8 +20,8 @@ def orbital_period(Mtot, a):
 
 # We can play around with these
 M1 = 1.0 | units.MSun
-M2 = 1.0 | units.MJupiter 
-semi_a = 2 | units.au
+M2 = 0.5 | units.MSun 
+semi_a = 15 | units.au
 ecc = 0.6
 bodies = new_binary_from_orbital_elements(M1, M2, semi_a, ecc,
                                          G=constants.G)
@@ -34,8 +34,8 @@ R = 1 | units.au
 
 converter = nbody_system.nbody_to_si(M1, R)
 Ndisk = 1000
-Rin = 0.2 | units.AU
-Rout = 0.7 | units.AU
+Rin = 1 | units.AU
+Rout = 5 | units.AU
 Pinner = orbital_period(M1, Rin)
 Mdisk = 0.01 * Mstar
 
@@ -94,7 +94,7 @@ hydro.parameters.isothermal_flag = True
 hydro.parameters.integrate_entropy_flag = False
 hydro.parameters.timestep = 0.01*Pinner 
 hydro.parameters.verbosity = 0
-hydro.parameters.eps_is_h_flag = False  # h_smooth is constant
+hydro.parameters.eps_is_h_flag = True  # h_smooth is NOT constant
 eps = 0.1 | units.au
 hydro.parameters.gas_epsilon = eps
 hydro.parameters.sph_h_const = eps * 5  # This works with 1000 particles, but it can run into problems in long simulation. Keep an eye on this if we get '-1' errors in Fi. -Marco
@@ -104,6 +104,8 @@ channel.update({"from_disk": disk.new_channel_to(hydro.particles)})
 channel.update({"to_disk": hydro.particles.new_channel_to(disk)})
 channel.update({"from_moon": secondary.new_channel_to(hydro.dm_particles)})
 channel.update({"to_moon": hydro.dm_particles.new_channel_to(secondary)})
+channel.update({"pts": star.new_channel_to(planet)})
+channel.update({"stp": planet.new_channel_to(star)})
 
 ### Setting up Bridge ###
 
@@ -123,7 +125,7 @@ gravhydro.timestep = 0.001 * Pinner # This is important and will cause errors in
 dtt = Pinner.number | units.s
 t_end = 100.0 | units.yr
 model_time = 0 | units.yr
-dt = 10.0 * dt  # Usually would be lower, but i'm increasing it to run the simulation for 100 years. Once i'm sure it works properly i'll try to do ~Myr
+dt = 1. * dtt  # Usually would be lower, but i'm increasing it to run the simulation for 100 years. Once i'm sure it works properly i'll try to do ~Myr
 plot_counter = 0
 
 while model_time < t_end:
@@ -137,8 +139,11 @@ while model_time < t_end:
     channel["to_stars"].copy()
     channel["to_disk"].copy()
     channel["to_moon"].copy()
+    channel["pts"].copy()
+    channel["stp"].copy()
+
     fig = plt.figure()
-    plot_system(save=True, save_name=f"time_{plot_counter}.png", time=model_time.number)
+    plot_system(save=True, save_name=f"time_{model_time.in_(units.day)}.png", time=model_time.number)
     
 
 gravity.stop()
@@ -156,20 +161,19 @@ from matplotlib.animation import FuncAnimation, PillowWriter
 files = glob.glob("*.png")
 
 numbers = []
-#for f in files:
-#    numbers.append(float(f[5:12]))
-#ff = [y for _,y in sorted(zip(numbers, files))]
+for f in files:
+    numbers.append(float(f[5:12]))
+ff = [y for _,y in sorted(zip(numbers, files))]
 # ---------------------
 
 
-n_frames = 517 # change with the number of plots 
-frames = [f"time_{i}." for i in range(1,n_frames)]
+
 
 with imageio.get_writer("perturbed_disk_long.gif", mode='I', duration=0.1) as writer:
-    for frame in frames:
+    for frame in ff:
         image = imageio.imread(frame)
         writer.append_data(image)
 
 # Clean up the directory 
-for frame in frames:
+for frame in ff:
     os.remove(frame)
