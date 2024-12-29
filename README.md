@@ -27,7 +27,8 @@ Disk in a binary system made with the code in "perturbed_disk.py" over a few yea
 
 ![perturbed_disk_long](https://github.com/user-attachments/assets/181e3a7f-f578-49ef-86f1-6a67ff8c55c7)
 
+Supernova explosion using the code "supernova.py", looks like with the current parameters it reaches max distances after about 10 days:
 
-
+![sn_test](https://github.com/user-attachments/assets/e4461af8-fdc9-4e71-9692-e943b66d6b77)
 
 
