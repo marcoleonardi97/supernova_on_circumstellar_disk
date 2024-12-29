@@ -23,14 +23,9 @@ Evolve each step as its own system and comment on the results:
 
 Results:
 
-Disk in a binary system made with the code in "perturbed_disk.py" over 1 year.
+Disk in a binary system made with the code in "perturbed_disk.py" over a few years. I would like to integrate it for several orbits but it's hard to manage the different timescales (it crashes before 10 years usually)
 
-![perturbed_disk_wide](https://github.com/user-attachments/assets/091c945b-b11d-4d12-b5ed-2e863b4afe3e)
-
-Typo ! This should be years, not Myr
-
-![perturbed_disk_long-Copy1 (1)](https://github.com/user-attachments/assets/aabb8ea4-5da1-4cb2-b25a-9240f564ef98)
-
+![perturbed_disk_long](https://github.com/user-attachments/assets/181e3a7f-f578-49ef-86f1-6a67ff8c55c7)
 
 
 
