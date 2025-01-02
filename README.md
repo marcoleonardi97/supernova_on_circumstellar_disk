@@ -27,6 +27,8 @@ Disk in a binary system made with the code in "perturbed_disk.py" over a few yea
 
 ![perturbed_disk_long](https://github.com/user-attachments/assets/181e3a7f-f578-49ef-86f1-6a67ff8c55c7)
 
+Fast simulation of the disk without bridging hydro!
+
 ![no_bridge](https://github.com/user-attachments/assets/d8c20d91-d780-4060-b3c8-ef337908a3a5)
 
 
