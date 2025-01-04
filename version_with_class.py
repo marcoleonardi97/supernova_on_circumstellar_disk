@@ -1,8 +1,12 @@
+import glob
+import os
 import numpy as np
 
 from matplotlib import pyplot as plt
 from amuse.plot import plot, scatter
 from amuse.units import units, constants
+import imageio.v2 as imageio
+from matplotlib.animation import FuncAnimation, PillowWriter
 
 from amuse.lab import Particles
 from amuse.units import nbody_system
@@ -248,4 +252,27 @@ class BinaryDisk(object):
 
 
 
-        
+# To evolve this system you can simply call evolve():
+
+system = BinaryDisk(1000, components="stars")  # Running this code with the system as 'stars' will just animate the stars orbit.
+t_end = 100 | units.yr
+system.evolve(t_end, plot=True, verbose=True)
+
+
+
+# -------------------- This code is only needed if we don't name the plots with plot_counter
+files = glob.glob("*.png")
+
+numbers = []
+for f in files:
+    numbers.append(float(f[5:10]))  # change according to whatever name you use for the frames, this work with f"disk_{time:.3f}.png"
+ff = [y for _,y in sorted(zip(numbers, files))]
+
+with imageio.get_writer("disk.gif", mode='I', duration=0.1) as writer:
+    for frame in ff:
+        image = imageio.imread(frame)
+        writer.append_data(image)
+
+# Clean up the directory 
+for frame in ff:
+    os.remove(frame)
