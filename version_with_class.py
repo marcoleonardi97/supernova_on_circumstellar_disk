@@ -29,7 +29,7 @@ from numba import jit
 # When you initiate the class, just call: components = "all" or "disk" or "stars".
 
 class BinaryDisk(object):
-    def __init__(self, ndisk=1000, components = "all"):
+    def __init__(self, rin = 1 | units.au, rout = 5 | units.au, ndisk=1000, components = "all"):
         self.components = components
         self.m1 = 1 | units.MSun
         self.m2 = 0.5 | units.MSun
@@ -37,8 +37,8 @@ class BinaryDisk(object):
         self.ecc = 0.6
         self.ndisk = ndisk
         self.converter = nbody_system.nbody_to_si(self.m1, 1 | units.au)
-        self.rin = 1 | units.au   # Disk inner radius
-        self.rout = 5 | units.au  # Disk outer radius
+        self.rin = rin    # Disk inner radius
+        self.rout = rout  # Disk outer radius
         self.pinner = (((4 * np.pi**2) * self.semimaj**3)/(constants.G * (self.m1+self.m2))).sqrt() # Rev. Period of a disk particle in the innner disk
         self.particles = Particles()
         self.gas_particles = Particles()
@@ -270,10 +270,21 @@ class BinaryDisk(object):
 
 # To evolve this system you can simply call evolve():
 
-system = BinaryDisk(1000, components="stars")  # Running this code with the system as 'stars' will just animate the stars orbit.
+system = BinaryDisk(components="stars")  # Running this code with the system as 'stars' will just animate the stars orbit.
 t_end = 100 | units.yr
-system.evolve(t_end, plot=True, verbose=True)
+system.evolve(t_end, plot=True, verbose=False)
 
+# ----------------------------
+system = BinaryDisk(components="disk")  # Running this code with the system as 'disk' will just animate the gas cloud rotating.
+t_end = 10 | units.yr
+system.evolve(t_end, plot=True, verbose=False)
+# ----------------------------
+
+# ----------------------------
+system = BinaryDisk(components="all")  # Running this code will animate the whole system evolution without bridge.
+t_end = 10 | units.yr
+system.evolve_without_bridge(t_end, plot=True, verbose=False)
+# ----------------------------
 
 
 # -------------------- This code is only needed if we don't name the plots with plot_counter
