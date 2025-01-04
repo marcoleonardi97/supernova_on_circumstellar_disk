@@ -243,6 +243,22 @@ class BinaryDisk(object):
                 self.plot_system(save=True, save_name=f"disk_{time.number:.3f} {time.unit}.png", time=time)
         print("Done.")
 
+    def evolve_without_bridge(self, dt, tend, plot=False):
+        channel = self.channel()
+        time = 0 | units.yr
+        print("Starting simulation without bridge...")
+        while time < tend:
+            time += dt
+            self.gravity.evolve_model(time)
+            print(f"Ph4 evolved to: {time}")
+            self.hydro.evolve_model(time)
+            print(f"Fi evolved to: {time}")
+            channel["to_stars"].copy()
+            channel["h_to_all"].copy()
+
+            if plot:
+                self.plot_system(save=True, save_name=f"disk_{time.number:.3f} {time.unit}.png", time=time)
+
 
     def __str__(self):
         d = {"all": "protoplanetary disk in a binary star system",
