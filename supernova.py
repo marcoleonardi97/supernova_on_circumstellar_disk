@@ -48,17 +48,19 @@ def setup_stellar_evolution_model(time):
 t = 1 | units.yr
 
 path_to_pickle = "tmpnvo376xy/test.pkl" # Change to your path 
-if os.path.exsits(path_to_pickle):
-  pickle_file = path_to_pickle
+if os.path.exists(path_to_pickle):
+    pickle_file = path_to_pickle
+    print(f"Using existing file {path_to_pickle}")
 else:
-  pickle_file = setup_stellar_evolution_model(t) # Assuming the star model hasnt already been created
+    print("Setting up new star...")
+    pickle_file = setup_stellar_evolution_model(t) # Assuming the star model hasnt already been created
 
 
 # Modelling core and gas particles
 
 number_of_sph_particles = 1000
 print(pickle_file)
-print("Creating initial conditions from a MESA stellar evolution model...")
+print("Creating initial conditions from a EVTwin stellar evolution model...")
 model = convert_stellar_model_to_SPH(
         None,
         number_of_sph_particles,
