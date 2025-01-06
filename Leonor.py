@@ -103,9 +103,9 @@ def plot(primary, disk):
     scatter(primary.x.in_(units.au), primary.y.in_(units.au),color='blue')
     #scatter(secondary.x.in_(units.au), secondary.y.in_(units.au),color='blue')
 plot(primary, disk)
-from amuse.community.huayno.interface import Huayno
+from amuse.community.pH4.interface import Ph4
 from amuse.community.fi.interface import Fi
-gravity = Huayno(converter)
+gravity = Ph4(converter)
 gravity.particles.add_particles(bodies)
 channel = {"from stars": bodies.new_channel_to(gravity.particles),
             "to_stars": gravity.particles.new_channel_to(bodies)}
@@ -116,7 +116,7 @@ hydro.parameters.radiation_flag = False
 hydro.parameters.gamma = 1
 hydro.parameters.isothermal_flag = True
 hydro.parameters.integrate_entropy_flag = False
-hydro.parameters.timestep = 0.01*Pinner 
+hydro.parameters.timestep = 0.001*Pinner 
 hydro.parameters.verbosity = 0
 hydro.parameters.eps_is_h_flag = False  # h_smooth is constant
 eps = 0.1 | units.au
@@ -141,7 +141,7 @@ from amuse.ext.composition_methods import *
 gravhydro = bridge.Bridge(use_threading=False)  # , method=SPLIT_4TH_S_M4)
 gravhydro.add_system(gravity, (hydro,))
 gravhydro.add_system(hydro, (gravity,))
-gravhydro.timestep = 0.02*Pinner
+gravhydro.timestep = 0.001*Pinner
 
 from amuse.ext.composition_methods import *
 def gravity_hydro_bridge(gravity, hydro, gravhydro, bodies,t_end):
