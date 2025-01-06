@@ -8,6 +8,7 @@ Creates a protoplanetary disk around a sun-like star and nearby supernova to sim
 
 import os
 import numpy as np
+import glob
 
 from amuse.units import units
 from amuse.plot import scatter
@@ -23,7 +24,6 @@ from amuse.community.fi.interface import Fi
 from matplotlib import pyplot as plt
 import imageio.v2 as imageio
 from matplotlib.animation import FuncAnimation, PillowWriter
-
 
 
 # Making the disk
@@ -186,6 +186,22 @@ while time < tend:
 sph.stop()
 
 
+
+files = glob.glob("*.png")
+
+numbers = []
+for f in files:
+    numbers.append(float(f[5:10]))
+ff = [y for _,y in sorted(zip(numbers, files))]
+
+with imageio.get_writer("nova_attempt.gif", mode='I', duration=0.1) as writer:
+    for frame in ff:
+        image = imageio.imread(frame)
+        writer.append_data(image)
+
+# Clean up the directory 
+for frame in ff:
+    os.remove(frame)
 
 
 
