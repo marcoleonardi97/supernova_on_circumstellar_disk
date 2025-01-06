@@ -15,7 +15,7 @@ from amuse.ext.composition_methods import *
 ### Setting up the binary system and the disk ###
 
 def orbital_period(Mtot, a):
-    return (((4 * numpy.pi**2) * a**3)/(constants.G * Mtot)).sqrt()
+    return (((4 * np.pi**2) * a**3)/(constants.G * Mtot)).sqrt()
 
 
 # We can play around with these
