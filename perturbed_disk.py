@@ -37,18 +37,18 @@ Ndisk = 1000
 Rin = 1 | units.AU
 Rout = 5 | units.AU
 Pinner = orbital_period(M1, Rin)
-Mdisk = 0.01 * Mstar
+Mdisk = 0.01 * M1
 
 disk = ProtoPlanetaryDisk(Ndisk,
                           convert_nbody=converter,
                           Rmin=Rin/R,
                           Rmax=Rout/R,
                           q_out=10.0,
-                          discfraction=Mdisk/Mstar).result
+                          discfraction=Mdisk/M1).result
 disk.name = "disk "
 disk.move_to_center()
-disk.position += star.position
-disk.velocity += star.velocity
+disk.position += primary.position
+disk.velocity += primary.velocity
 
 masses = Mdisk / float(Ndisk)
 disk.mass = masses
@@ -70,8 +70,8 @@ def plot_system(save=False, save_name=None, time=None):
     plt.xlim(-l,l)
     plt.ylim(-l,l)
     scatter(bodies.x.in_(units.AU), bodies.y.in_(units.AU), c='orange', alpha=0.5, s=10)
-    scatter(star.x, star.y, marker="*",c='r', s=120,label="Primary Star")
-    scatter(planet.x, planet.y, marker='*', c='y',s=120, label="Secondary Star")
+    scatter(primary.x, primary.y, marker="*",c='r', s=120,label="Primary Star")
+    scatter(secondary.x, secondary.y, marker='*', c='y',s=120, label="Secondary Star")
     plt.legend()
     if time is not None:
         plt.title(f"Disk at {time:.2f} yr")
