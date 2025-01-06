@@ -154,21 +154,31 @@ converter = nbody_system.nbody_to_si(10|units.MSun, core_radius)
 hydro_code = Fi(converter,mode='openmp',redirection='none')
 hydro_code.parameters.epsilon_squared = core_radius**2
 hydro_code.parameters.n_smooth_tol = 0.01
+hydro_code.parameters.timestep = 0.1 | units.day
 hydro_code.gas_particles.add_particles(gas_without_core)
 hydro_code.dm_particles.add_particle(core)
+
+
+# Bridge
+from amuse.couple import bridge 
+
+hydro = bridge.Bridge()
+hydro.add_system(sph, (hydro_code,))
+hydro.add_system(hydro_code, (sph,))
+hydro.timestep = 0.1 | units.day
 
 
 
 # Simulation
 
 tend = 10 | units.yr
-timestep = 1 | units.day
+timestep = 0.5 | units.day
 time = 0 | units.yr
 
 while time < tend:
 
     #hydro_code.evolve_model(sph.model_time + timestep)
-    sph.evolve_model(time)
+    hydro.evolve_model(time)
     time += sph.parameters.timestep
     print(f"Evolved to: {sph.model_time}")
     plt.figure()
@@ -180,10 +190,11 @@ while time < tend:
     scatter(sph.particles.x.in_(units.au), sph.particles.y.in_(units.au), c='blue', label="Disk")
     scatter(sun.x.in_(units.au), sun.y.in_(units.au), marker='*', c='yellow')
     plt.legend(loc='upper right')
-    plt.title(f"{time}")
+    plt.title(f"{time.number:.3f} {time.unit}")
     plt.savefig(f"nova_{time.number:.3f}.png")
 
 sph.stop()
+hydro_code.stop()
 
 
 
