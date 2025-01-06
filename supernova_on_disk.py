@@ -1,16 +1,13 @@
 # -*- coding: ascii -*-
 """
-Creates a protoplanetary disk around a sun-like star
+Creates a protoplanetary disk around a sun-like star and nearby supernova to simulate the collision
+(project part 2)
 """
-import numpy as np
+
+
+
 import os
-
-from matplotlib import pyplot
-import imageio.v2 as imageio
-from matplotlib.animation import FuncAnimation, PillowWriter
-
-from amuse.community.evtwin.interface import EVtwin
-from amuse.community.fi.interface import Fi
+import numpy as np
 
 from amuse.units import units
 from amuse.plot import scatter
@@ -20,9 +17,16 @@ from amuse.datamodel import Particles
 
 from amuse.ext.star_to_sph import (pickle_stellar_model, convert_stellar_model_to_SPH)
 from amuse.test.amusetest import get_path_to_results
+from amuse.community.evtwin.interface import EVtwin
+from amuse.community.fi.interface import Fi
+
+from matplotlib import pyplot as plt
+import imageio.v2 as imageio
+from matplotlib.animation import FuncAnimation, PillowWriter
 
 
-# Disk
+
+# Making the disk
 
 N = 1000
 tend = 2. | units.yr
@@ -37,17 +41,34 @@ gas.h_smooth = 0.06 | units.AU
 sun = Particles(1)
 sun.mass = Mstar
 sun.radius = 2. | units.AU
-sun.x = 0. | units.AU
+sun.x = 30. | units.AU
 sun.y = 0. | units.AU
 sun.z = 0. | units.AU
 sun.vx = 0. | units.kms
 sun.vy = 0. | units.kms
 sun.vz = 0. | units.kms
 
+gas.position += sun.position
+gas.velocity += sun.velocity
 
-# Nova
 
-# Setting up the star
+# Hydro code for the disk
+sph = Fi(convert, mode='openmp')
+
+sph.parameters.use_hydro_flag = True
+sph.parameters.radiation_flag = False
+sph.parameters.self_gravity_flag = True
+sph.parameters.gamma = 1.
+sph.parameters.isothermal_flag = True
+sph.parameters.integrate_entropy_flag = False
+sph.parameters.timestep = 0.125 | units.yr
+
+sph.particles.add_particles(gas)
+sph.dm_particles.add_particles(sun)
+
+
+# Making the supernova
+
 
 def setup_stellar_evolution_model(time):
     out_pickle_file = os.path.join(get_path_to_results(), 
@@ -84,11 +105,13 @@ def setup_stellar_evolution_model(time):
 # Use the stellar evolution setup with EVtwin
 t = 1 | units.yr
 
-path_to_pickle = "tmps3wlklve/test.pkl" # Change to your path 
+path_to_pickle = "tmpow7eucrj/test.pkl" # Change to your path. If you can't run EVTwin, download the test.pkl pickle file from this github.
 if os.path.exists(path_to_pickle):
-  pickle_file = path_to_pickle
+    pickle_file = path_to_pickle
+    print(f"Using existing file {path_to_pickle}")
 else:
-  pickle_file = setup_stellar_evolution_model(t) # Assuming the star model hasnt already been created
+    print("Setting up new star...")
+    pickle_file = setup_stellar_evolution_model(t) # Assuming the star model hasnt already been created
 
 
 # Modelling core and gas particles
@@ -108,9 +131,6 @@ model = convert_stellar_model_to_SPH(
 print("model=", model)
 core, gas_without_core, core_radius = \
         model.core_particle, model.gas_particles, model.core_radius
-
-core.position += (30, 0, 0) | units.au
-gas_without_core.position += (30, 0, 0) | units.au
 print("Created", len(gas_without_core),
        "SPH particles and one 'core-particle':\n", core)
 print("Setting gravitational smoothing to:", core_radius.in_(units.km))
@@ -128,48 +148,44 @@ def inject_supernova_energy(gas_particles,
     
 inject_supernova_energy(gas_without_core, exploding_region=1|units.RSun)
 
+converter = nbody_system.nbody_to_si(10|units.MSun, core_radius)
+
+# Hydro code for the supernova
+hydro_code = Fi(converter,mode='openmp',redirection='none')
+hydro_code.parameters.epsilon_squared = core_radius**2
+hydro_code.parameters.n_smooth_tol = 0.01
+hydro_code.gas_particles.add_particles(gas_without_core)
+hydro_code.dm_particles.add_particle(core)
 
 
 
-sph = Fi(convert)
+# Simulation
 
-sph.parameters.use_hydro_flag = True
-sph.parameters.radiation_flag = False
-sph.parameters.self_gravity_flag = True
-sph.parameters.gamma = 1.
-sph.parameters.isothermal_flag = True
-sph.parameters.integrate_entropy_flag = False
-sph.parameters.timestep = 0.125 | units.yr
+tend = 10 | units.yr
+timestep = 1 | units.day
+time = 0 | units.yr
 
-sph.gas_particles.add_particles(gas)
-sph.gas_particles.add_particles(gas_without_core)
+while time < tend:
 
-sph.particles.add_particles(sun)
-sph.dm_particles.add_particle(core)
-
-def plot_star_from_code(code, save = False, name=None, time=None):
-    l = 100 
+    #hydro_code.evolve_model(sph.model_time + timestep)
+    sph.evolve_model(time)
+    time += sph.parameters.timestep
+    print(f"Evolved to: {sph.model_time}")
+    plt.figure()
+    l = 55
     plt.xlim(-l,l)
     plt.ylim(-l,l)
-    gas = code.gas_particles
-    core = code.dm_particles
-    scatter(gas.x.value_in(units.au), gas.y.value_in(units.au), c='orange', label="Gas")
-    scatter(core.x.value_in(units.au), core.y.value_in(units.au), marker='*',c='r', label="Core")
-    if time is not None:
-        plt.title(f"{time.number:.2f} days")
-    if save:
-        plt.savefig(f"sn_{name}.png")
-
-tend = 10 | units.day
-timestep = 1 | units.hour
-frames = 0
-
-while sph.model_time < tend:
-    frames += 1
-    sph.evolve_model(sph.model_time + (timestep))
-    print(f"Evolved to: {sph.model_time.in_(units.day)}, Frame: {frames}")
-    plot_star_from_code(sph, save=True, name=f"50_{frames}", time=hydro_code.model_time.in_(units.day))
+    scatter(hydro_code.gas_particles.x.in_(units.au), hydro_code.gas_particles.y.in_(units.au), c='orange', label="SN")
+    scatter(hydro_code.dm_particles.x.in_(units.au), hydro_code.dm_particles.y.in_(units.au), marker='*',c='yellow', label="Core")
+    scatter(sph.particles.x.in_(units.au), sph.particles.y.in_(units.au), c='blue', label="Disk")
+    scatter(sun.x.in_(units.au), sun.y.in_(units.au), marker='*', c='yellow')
+    plt.legend(loc='upper right')
+    plt.title(f"{time}")
+    plt.savefig(f"nova_{time.number:.3f}.png")
 
 sph.stop()
+
+
+
 
 
