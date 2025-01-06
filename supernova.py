@@ -49,7 +49,7 @@ t = 1 | units.yr
 
 path_to_pickle = "tmpnvo376xy/test.pkl" # Change to your path 
 if os.path.exsits(path_to_pickle):
-  pickle_file = "tmpnvo376xy/test.pkl"
+  pickle_file = path_to_pickle
 else:
   pickle_file = setup_stellar_evolution_model(t) # Assuming the star model hasnt already been created
 
