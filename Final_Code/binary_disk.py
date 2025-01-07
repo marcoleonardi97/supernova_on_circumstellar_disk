@@ -38,11 +38,11 @@ options.GlobalOptions.instance().override_value_for_option("polling_interval_in_
 
 
 class BinaryDisk(object):
-    def __init__(self, rin= 1 | units.au, rout= 5 | units.au, ndisk=1000, components = "all"):
+    def __init__(self, rin= 1 | units.au, rout= 5 | units.au, semimaj = 15 | units.au, ndisk=1000, components = "all"):
         self.components = components
         self.m1 = 1 | units.MSun
         self.m2 = 0.5 | units.MSun
-        self.semimaj = 20 | units.au
+        self.semimaj = semimaj
         self.ecc = 0.6
         self.rin = rin
         self.rout = rout
