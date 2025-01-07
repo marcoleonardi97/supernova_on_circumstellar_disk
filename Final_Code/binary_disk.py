@@ -20,7 +20,7 @@ from amuse.couple import bridge
 from amuse.ext.composition_methods import *
 from amuse.support import options
 
-from numba import jit
+from numba import jit # Currently not used
 
 
 
@@ -325,42 +325,3 @@ class BinaryDisk(object):
         f" Particles in the hydro code: {len(self.hydro.particles)}")
         return ""
 
-
-
-# Below are three examples of how to initiate this class with different components of the disk. Make sure you delete them and only keep one when you run this code.
-# To evolve this system with bridge you can simply call system.evolve():
-# To check the particles and model_time of the system you can print the class: print(system)
-
-system = BinaryDisk(components="stars")  # Running this code with the system as 'stars' will just animate the stars orbit.
-t_end = 100 | units.yr
-system.evolve(t_end, plot=True, verbose=False)
-
-# ----------------------------
-system = BinaryDisk(components="disk")  # Running this code with the system as 'disk' will just animate the gas cloud rotating.
-t_end = 10 | units.yr
-system.evolve(t_end, plot=True, verbose=False)
-# ----------------------------
-
-# ----------------------------
-system = BinaryDisk(components="all")  # Running this code will animate the whole system evolution without bridge.
-t_end = 10 | units.yr
-system.evolve_without_bridge(t_end, plot=True, verbose=False)
-# ----------------------------
-
-
-# Animation - this method only works if you don't have other pngs in your directory.
-files = glob.glob("*.png")
-
-numbers = []
-for f in files:
-    numbers.append(float(f[5:10]))  # change according to whatever name you use for the frames, this work with f"disk_{time:.3f}.png"
-ff = [y for _,y in sorted(zip(numbers, files))]
-
-with imageio.get_writer("disk.gif", mode='I', duration=0.1) as writer:
-    for frame in ff:
-        image = imageio.imread(frame)
-        writer.append_data(image)
-
-# Clean up the directory - this should not remove all of your pngs, but be careful anyways
-for frame in ff:
-    os.remove(frame)
