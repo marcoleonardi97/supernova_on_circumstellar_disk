@@ -4,7 +4,7 @@ https://docs.google.com/document/d/1dHtwYFsnluikh4RLamNygjsehVWr4a8ct8pp-gWv71c/
 Simulating a supernova explosion in the vicinity of a proto-planetary disk, with and without an additional perturbing object. 
 
 1. Make a protoplanetary disk around a 1 MSun star, orbited by a smaller (< 0.5 MSun) object that inclines and flares the disk. 
-2. Explode a ($\approx 30 M_\odot$) star in the vicinity (50 AU) without the perturbing object
+2. Explode a ($\approx 30 M_\odot$) star in the vicinity (30 AU) without the perturbing object
 3. Explode the same star in the vicinity of the perturbed disk, monitoring the effect on the flares and structures of the disk. 
 
 <ins>Minimum passing grade plan</ins>
