@@ -70,7 +70,7 @@ class BinaryDisk(object):
         self.gravity = Ph4(self.converter)
         self.gravity.particles.add_particles(self.all_particles)
         self.gravity.parameters.timestep_parameter = 0.07
-        self.gravity.parameters.epsilon_squared = 1./self.ndisk**(2./3) | units.au**2
+        self.gravity.parameters.epsilon_squared = 1./self.ndisk**(2./3) | units.au**2  # 0.01 au **2 with 1000 particles, sometimes it works sometimes it doesn't
 
         # Hydro
         
@@ -94,7 +94,8 @@ class BinaryDisk(object):
 
         # Disk
         self.hydro.particles.add_particles(self.gas_particles)
-        #self.hydro.dm_particles.add_particles(self.particles)
+        if self.components == "disk":
+            self.hydro.dm_particles.add_particles(self.particles)
 
 
 
@@ -131,7 +132,7 @@ class BinaryDisk(object):
         disk.mass = masses
         rho = 3.0 | (units.g / units.cm**3)
         disk.radius = (disk.mass / (4 * rho))**(1./3.)
-        #disk.h_smooth = self.rin
+        #disk.h_smooth = self.rin ? 
         self.gas_particles.add_particles(disk)
         self.all_particles.add_particles(disk)
 
@@ -142,8 +143,9 @@ class BinaryDisk(object):
 
 
 
-    def plot_system(self, part="all", save=False, save_name=None, time=None):
+    def plot_system(self, show=False, part="all", save=False, save_name=None, time=None):
         """
+        show: bool; show the plot, used when you're just looking at the system without evolving.
         part: list or str; select which source of particles to plot. Accepted inputs
         are: combinations of ["hydro", "gravity", "gas", "stars"], "all".
         save: bool; flag to save plots
@@ -167,16 +169,20 @@ class BinaryDisk(object):
             scatter(planet.x, planet.y, marker='*', c='y',s=120, label="Secondary Star")
         if part == "all":
             scatter(self.all_particles.x.in_(units.AU), self.all_particles.y.in_(units.AU), c='orange', alpha=0.5, s=10)
-            #scatter(self.gas_particles.x.in_(units.AU), self.gas_particles.y.in_(units.AU), c='blue', alpha=0.5, s=10)
             scatter(star.x, star.y, marker="*",c='r', s=120,label="Primary Star")
             scatter(planet.x, planet.y, marker='*', c='y',s=120, label="Secondary Star")
+            
         plt.legend(loc='upper right')
         plt.close()
         if time is not None:
             plt.title(f"Disk at {time.number:.2f} {time.unit}")
+
+        if show:
+            plt.show()
     
         if save:
             plt.savefig(save_name)
+            plt.close()
 
 
     def channel(self):
@@ -321,7 +327,8 @@ class BinaryDisk(object):
 
 
 # Below are three examples of how to initiate this class with different components of the disk. Make sure you delete them and only keep one when you run this code.
-# To evolve this system with bridge you can simply call evolve():
+# To evolve this system with bridge you can simply call system.evolve():
+# To check the particles and model_time of the system you can print the class: print(system)
 
 system = BinaryDisk(components="stars")  # Running this code with the system as 'stars' will just animate the stars orbit.
 t_end = 100 | units.yr
