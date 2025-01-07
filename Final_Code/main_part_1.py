@@ -6,13 +6,10 @@ from binary_disk import BinaryDisk
 # To check the particles and model_time of the system you can print the class: print(system)
 
 # This is the real part 1 code, run for however long you want.
-system = BinaryDisk(rin = 1 | units.au, rout = 5 | units.au, semimaj = 15 | units.au, components="all")
+system = BinaryDisk(rin = 1 | units.au, rout = 5 | units.au, semimaj = 25 | units.au, components="all")
 system.plot_system(show=True) # This will show a snapshot of the system
 t_100 | units.yr
 system.evolve(t_end, plot=True, verbose=False)
-
-
-
 
 
 # Animation - this method only works if you don't have other pngs in your directory.
