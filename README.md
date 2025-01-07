@@ -23,9 +23,11 @@ Evolve each step as its own system and comment on the results:
 
 Results:
 
-Disk in a binary system made with the code in "perturbed_disk.py" over a few years. I would like to integrate it for several orbits but it's hard to manage the different timescales (it crashes before 10 years usually)
+Disk in a binary system made with the code in "final_code/main_part_1.py" over10 years. This code seems to work fine, i'm currently running it for > 100 years with disks of different sizes:
 
-![perturbed_disk_long](https://github.com/user-attachments/assets/181e3a7f-f578-49ef-86f1-6a67ff8c55c7)
+![15au_10years_5disk](https://github.com/user-attachments/assets/a0d9d260-4f60-4e61-84ee-3e19bc88fdc3)
+
+
 
 Fast simulation of the disk without bridging hydro!
 
