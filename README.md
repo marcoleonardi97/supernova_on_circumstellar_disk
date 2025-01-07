@@ -23,9 +23,11 @@ Evolve each step as its own system and comment on the results:
 
 Results:
 
-Disk in a binary system made with the code in "final_code/main_part_1.py" over10 years. This code seems to work fine, i'm currently running it for > 100 years with disks of different sizes:
+Disk in a binary system made with the code in "final_code/main_part_1.py" over 56 years (crashed at 56). It looks a little slow so i might change the timesteps a bit
+Parameters: disk radius 1-5 au, semi major axis: 25 (i think). 
 
-![15au_10years_5disk](https://github.com/user-attachments/assets/a0d9d260-4f60-4e61-84ee-3e19bc88fdc3)
+![15au_55years_5disk](https://github.com/user-attachments/assets/bc597912-7fc9-4ee1-adf1-152972bb3cd5)
+
 
 
 
