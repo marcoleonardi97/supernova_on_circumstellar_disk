@@ -1,5 +1,10 @@
 from binary_disk import BinaryDisk
 
+# Make a system using the class and choosing the components (="all" by default).
+# you can evolve using system.evolve(tend, display="all", plot=True, verbose=False) or system.evolve_without_bridge(tend, plot=True).
+# system.plot_system(show=True) will show a snapshot of the system
+# print(system) will show the model_time of the system and where the particles are currently stored.
+
 tend = 10 | units.yr
 
 system = BinaryDisk(rin = 4 | units.au, rout = 5 | units.au, components = "all") # Cool ring figure
