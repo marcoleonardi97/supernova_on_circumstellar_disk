@@ -41,4 +41,11 @@ Supernova explosion using the code "supernova.py", looks like with the current p
 
 ![sn_test](https://github.com/user-attachments/assets/e4461af8-fdc9-4e71-9692-e943b66d6b77)
 
+3d plot of a supernova hitting a vanilla disk. Still problems with the interaction of the two systems (this is using the supernova
+
+![nova3d (1)](https://github.com/user-attachments/assets/e74787a7-98d6-4b4c-98c5-f2a799b438d2)
+_on_disk file)
+
+
+
 
