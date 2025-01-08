@@ -24,6 +24,31 @@ from amuse.community.fi.interface import Fi
 from matplotlib import pyplot as plt
 import imageio.v2 as imageio
 from matplotlib.animation import FuncAnimation, PillowWriter
+from mpl_toolkits.mplot3d import Axes3D
+
+
+def plot3d(obj, name, obj2=None):
+    x = obj.x.in_(units.au)
+    y = obj.y.in_(units.au)
+    z = obj.z.in_(units.au)
+    
+    fig = plt.figure()
+    l = 10
+    ax = fig.add_subplot(111, projection='3d')
+
+    ax.set_xlim(-l,l)
+    ax.set_ylim(-l,l)
+    ax.set_zlim(-l,l)
+
+    
+    # Scatter plot of the particles
+    ax.scatter(x.number, y.number, z.number, s=1, c='blue', marker='o')  # Adjust size and color as needed
+    
+    # Set labels
+    ax.set_xlabel('X au')
+    ax.set_ylabel('Y au')
+    ax.set_zlabel('Z au')
+    plt.savefig(name)
 
 
 # Making the disk
@@ -171,8 +196,8 @@ hydro.timestep = 0.1 | units.day
 
 # Simulation
 
-tend = 10 | units.yr
-timestep = 0.5 | units.day
+tend = 5 | units.day
+timestep = 0.1 | units.day
 time = 0 | units.yr
 
 while time < tend:
@@ -181,6 +206,8 @@ while time < tend:
     hydro.evolve_model(time)
     time += sph.parameters.timestep
     print(f"Evolved to: {sph.model_time}")
+    plot3d(hydro, f"nova_{time.number:.3f}")
+    """
     plt.figure()
     l = 55
     plt.xlim(-l,l)
@@ -192,6 +219,7 @@ while time < tend:
     plt.legend(loc='upper right')
     plt.title(f"{time.number:.3f} {time.unit}")
     plt.savefig(f"nova_{time.number:.3f}.png")
+    """
 
 sph.stop()
 hydro_code.stop()
