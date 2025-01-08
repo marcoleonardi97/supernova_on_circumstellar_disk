@@ -32,7 +32,9 @@ saved_system = read_set_from_file('test.hdf5', 'amuse', close_file=True)
 new_system = BinaryDisk(from_set = saved_system)
 new_system.plot_system(show=True)
 
-
+# If you want to save during a simulation because it may crash, you can use the backup parameter in evolve():
+# backup_dt: the system will be backed up to the file every backup_dt timesteps. 
+system.evolve(tend, plot=True, verbose=False, backup=True, backup_file="backup.hdf5", backup_dt = 10)
 
 
 
