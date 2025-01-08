@@ -7,9 +7,13 @@ from binary_disk import BinaryDisk
 
 tend = 10 | units.yr
 
-system = BinaryDisk(rin = 0.5 | units.au, rout = 1 | units.au, components = "all") # Small disk
+system = BinaryDisk(rin = 0.5 | units.au, rout = 1 | units.au, components = "all") # Simple small disk
 system.plot_system(show=True)
 system.evolve(tend, plot=True, verbose=False)
+
+system = BinaryDisk(rin = 0.5 | units.au, rout = 1 | units.au, components = "all") # 3D Plot! Just swap plot=True for plot3d=True. Don't activate both at once.
+system.plot3d(show=True)
+system.evolve(tend, plot3d=True, verbose=False)
 
 system = BinaryDisk(rin = 1 | units.au, rout = 10 | units.au, components = "disk") # Disk only without the binary pair
 system.plot_system(show=True)
