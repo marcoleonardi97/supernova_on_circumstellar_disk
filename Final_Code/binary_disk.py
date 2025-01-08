@@ -38,7 +38,7 @@ options.GlobalOptions.instance().override_value_for_option("polling_interval_in_
 
 
 class BinaryDisk(object):
-    def __init__(self, rin= 1 | units.au, rout= 5 | units.au, semimaj = 15 | units.au, ndisk=1000, components = "all"):
+    def __init__(self, from_set=None, rin= 1 | units.au, rout= 5 | units.au, semimaj = 15 | units.au, ndisk=1000, components = "all"):
         self.components = components
         self.m1 = 1 | units.MSun
         self.m2 = 0.5 | units.MSun
@@ -54,17 +54,23 @@ class BinaryDisk(object):
         self.system_time = 0 | units.yr
         self.converter = nbody_system.nbody_to_si(self.m1, 1 | units.au)
 
-        if components == "all": 
-            self.setup()
+        if from_set is None:
 
-        elif components == "stars":
-            self.make_stars()
-
-        elif components == "disk":
-            self.make_disk()
-            
-        elif components not in {"all", "stars", "disk"}:
-            raise ValueError(f"Invalid value for parameter: {components}. Must be one of 'all', 'stars', 'disk'.")
+            if components == "all": 
+                self.setup()
+    
+            elif components == "stars":
+                self.make_stars()
+    
+            elif components == "disk":
+                self.make_disk()
+                
+            elif components not in {"all", "stars", "disk"}:
+                raise ValueError(f"Invalid value for parameter: {components}. Must be one of 'all', 'stars', 'disk'.")
+        else:
+            self.all_particles.add_particles(from_set)
+            self.gas_particles.add_particles(from_set[from_set.name=="disk"])
+            self.particles.add_particles(from_set[from_set.name!="disk"])
 
         
         # Grav
@@ -204,7 +210,8 @@ class BinaryDisk(object):
         return gravhydro
         
     #@jit(nopython=True)
-    def evolve(self, tend, display="all", plot=False, verbose=False):
+    def evolve(self, tend, display="all", plot=False, backup = False, 
+               backup_file = f"simulation_backup.hdf5", backup_dt = 10, verbose=False):
         if self.components == "stars":
             self.evolve_gravity_only(tend, display, plot, verbose)
         elif self.components == "disk":
@@ -215,16 +222,21 @@ class BinaryDisk(object):
             time = 0 | units.yr
             dt =  code.timestep
             #dt = 0.1 | units.yr
+            loops = 0
             print("Starting simulation...")
             while time < tend:
                 
                 self.system_time += dt
                 code.evolve_model(time)
                 time += dt
+                loops += 1
                 
                 print(f"System evolved to: {time.in_(tend.unit)}")
                 channel["to_stars"].copy()
                 channel["to_disk"].copy()
+
+                if backup == True and loops % backup_dt == 0:
+                    write_set_to_file(self.all_particles.savepoint(time), filename, 'amuse', overwrite_file=True)
                 
                 if verbose:
                     print("------------------", "\n")
@@ -310,8 +322,7 @@ class BinaryDisk(object):
             if plot:
                 self.plot_system(part=part, save=True, save_name=f"disk_{time.number:.3f} {time.unit}.png", time=time)
 
-
-
+    
     def __str__(self):
         d = {"all": "protoplanetary disk in a binary star system",
             "disk": "protoplanetary disk",
@@ -325,3 +336,18 @@ class BinaryDisk(object):
         f" Particles in the hydro code: {len(self.hydro.particles)}")
         return ""
 
+    def save_particles(self, filename, memory="all", ow=False):
+        try:
+            if memory == "all":
+                write_set_to_file(self.all_particles, f'{filename}.hdf5', 'amuse', overwrite_file=ow)
+                print(f"Saved the system at time {self.system_time} in {filename}.hdf5")
+            elif memory == "gas":
+                write_set_to_file(self.gas_particles, f'{filename}.hdf5', 'amuse', overwrite_file=ow)
+                print(f"Saving the system at time {self.system_time} in {filename}.hdf5")
+            elif memory == "particles":
+                write_set_to_file(self.particles, f'{filename}.hdf5', 'amuse', overwrite_file=ow)
+                print(f"Saving the system at time {self.system_time} in {filename}.hdf5")
+                
+        except:
+            print("This file already exists, but overwrite is set to False.","\n",
+                 "Please set a new file name, or set ow=True to overwrite.")
