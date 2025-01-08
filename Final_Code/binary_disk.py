@@ -194,6 +194,41 @@ class BinaryDisk(object):
             plt.savefig(save_name)
             plt.close()
 
+       def plot3d(self, show=False, save=False, savename=None, time=None):
+    
+        x = self.all_particles.x.in_(units.au)
+        y = self.all_particles.y.in_(units.au)
+        z = self.all_particles.z.in_(units.au)
+        star = self.all_particles[self.all_particles.name=="Primary"]
+        planet = self.all_particles[self.all_particles.name=="Secondary"]
+
+        # Create a 3D plot
+        fig = plt.figure()
+        l = 2 * self.semimaj.number
+        ax = fig.add_subplot(111, projection='3d')
+    
+        ax.set_xlim(-l,l)
+        ax.set_ylim(-l,l)
+        ax.set_zlim(-l,l)
+    
+    
+        ax.scatter(x.number, y.number, z.number, s=1, c='blue', marker='o', alpha=0.5)  # Adjust size and color as needed
+        ax.scatter(star.x.number, star.y.number, star.z.number, marker='*', c='r', s=120, label='Primary Star')
+        ax.scatter(planet.x.number, planet.y.number, planet.z.number, marker='*', c='y', s=120, label='Secondary Star')
+        plt.legend(loc='upper right')
+        # Set labels
+        ax.set_xlabel('X au')
+        ax.set_ylabel('Y au')
+        ax.set_zlabel('Z au')
+        
+        if time is not None:
+            plt.title(f"Disk at: {time.number:.3f} {time.unit}")
+        if show:
+            plt.show()
+        if save:
+            plt.savefig(savename)
+            plt.close()
+
 
     def channel(self):
         channel = {"from_stars": self.all_particles.new_channel_to(self.gravity.particles),
@@ -239,7 +274,7 @@ class BinaryDisk(object):
                 channel["to_disk"].copy()
 
                 if backup == True and loops % backup_dt == 0:
-                    write_set_to_file(self.all_particles.savepoint(time), filename, 'amuse', overwrite_file=True)
+                    write_set_to_file(self.all_particles.savepoint(time), backup_file, 'amuse', overwrite_file=True)
                 
                 if verbose:
                     print("------------------", "\n")
@@ -326,19 +361,7 @@ class BinaryDisk(object):
                 self.plot_system(part=part, save=True, save_name=f"disk_{time.number:.3f} {time.unit}.png", time=time)
 
     
-    def __str__(self):
-        d = {"all": "protoplanetary disk in a binary star system",
-            "disk": "protoplanetary disk",
-            "stars": "binary star system"}
-        print (f"This class represents a {d[self.components]}. Currently at time {self.system_time}", "\n"
-        "The local particles storages are:", "\n", 
-        f"1. Stars (self.particles): {len(self.particles)}", "\n",
-        f"2. Gas particles (self.gas_particles): {len(self.gas_particles)}", "\n",
-        f"3. All particles (self.all_particles): {len(self.all_particles)}", "\n",
-        f"Particles in the gravity code: {len(self.gravity.particles)}", "\n"
-        f" Particles in the hydro code: {len(self.hydro.particles)}")
-        return ""
-
+    
     def save_particles(self, filename, memory="all", ow=False):
         try:
             if memory == "all":
@@ -354,3 +377,17 @@ class BinaryDisk(object):
         except:
             print("This file already exists, but overwrite is set to False.","\n",
                  "Please set a new file name, or set ow=True to overwrite.")
+
+    def __str__(self):
+        d = {"all": "protoplanetary disk in a binary star system",
+            "disk": "protoplanetary disk",
+            "stars": "binary star system"}
+        print (f"This class represents a {d[self.components]}. Currently at time {self.system_time}", "\n"
+        "The local particles storages are:", "\n", 
+        f"1. Stars (self.particles): {len(self.particles)}", "\n",
+        f"2. Gas particles (self.gas_particles): {len(self.gas_particles)}", "\n",
+        f"3. All particles (self.all_particles): {len(self.all_particles)}", "\n",
+        f"Particles in the gravity code: {len(self.gravity.particles)}", "\n"
+        f" Particles in the hydro code: {len(self.hydro.particles)}")
+        return ""
+
