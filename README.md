@@ -47,5 +47,8 @@ Supernova explosion using the code "supernova.py", looks like with the current p
 _on_disk file)
 
 
+The disk does work but it runs on its own timestep... not sure how to fix this yet
+
+![disk3d](https://github.com/user-attachments/assets/4dbe4a79-f261-4b9f-8d63-c1ecce0a7181)
 
 
