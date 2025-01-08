@@ -20,6 +20,9 @@ from amuse.couple import bridge
 from amuse.ext.composition_methods import *
 from amuse.support import options
 
+from amuse.io import write_set_to_file
+from amuse.io import read_set_from_file
+
 from numba import jit # Currently not used
 
 
