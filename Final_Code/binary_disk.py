@@ -7,6 +7,8 @@ from amuse.plot import plot, scatter
 from amuse.units import units, constants
 import imageio.v2 as imageio
 from matplotlib.animation import FuncAnimation, PillowWriter
+from mpl_toolkits.mplot3d import Axes3D
+
 
 from amuse.lab import Particles
 from amuse.units import nbody_system
