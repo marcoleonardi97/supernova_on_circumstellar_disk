@@ -81,7 +81,7 @@ for f in files:
     numbers.append(float(f[5:10]))
 ff = [y for _,y in sorted(zip(numbers, files))]
 
-with imageio.get_writer("15au_10years_5disk.gif", mode='I', duration=0.1) as writer:
+with imageio.get_writer("name.gif", mode='I', duration=0.1) as writer:
     for frame in ff:
         image = imageio.imread(frame)
         writer.append_data(image)
