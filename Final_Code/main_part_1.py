@@ -1,5 +1,5 @@
 
-from binary_disk import BinaryDisk
+from binary_disk import BinaryDisk  # %run binary_disk.ipynb on jupyter lab
 
 
 # To evolve this system with bridge you can simply call system.evolve():
