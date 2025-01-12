@@ -43,12 +43,19 @@ options.GlobalOptions.instance().override_value_for_option("polling_interval_in_
 
 
 class BinaryDisk(object):
-    def __init__(self, from_set=None, rin= 1 | units.au, rout= 5 | units.au, semimaj = 15 | units.au, ndisk=1000, components = "all"):
+    """
+    This class will create a ProtoPlanetaryDisk object, a binary star system, or both at once.
+    It allows to evolve each component seperately or together, export and import existing systems,
+    plot and animate the evolution in 2d or 3d.
+    """
+    def __init__(self, from_set=None, rin= 1 | units.au, rout= 5 | units.au, semimaj = 15 | units.au, 
+                 density = 3 | (units.g/units.cm**3), eccentricity = 0.6, ndisk=1000, components = "all"):
         self.components = components
         self.m1 = 1 | units.MSun
         self.m2 = 0.5 | units.MSun
         self.semimaj = semimaj
-        self.ecc = 0.6
+        self.density = density
+        self.ecc = eccentricity
         self.rin = rin
         self.rout = rout
         self.ndisk = ndisk
@@ -68,13 +75,13 @@ class BinaryDisk(object):
         if from_set is None:
 
             if components == "all": 
-                self.setup()
+                self._setup()
     
             elif components == "stars":
-                self.make_stars()
+                self._make_stars()
     
             elif components == "disk":
-                self.make_disk()
+                self._make_disk()
                 
             elif components not in {"all", "stars", "disk"}:
                 raise ValueError(f"Invalid value for parameter: {components}. Must be one of 'all', 'stars', 'disk'.")
@@ -114,18 +121,21 @@ class BinaryDisk(object):
         self.hydro.particles.add_particles(self.gas_particles)
         if self.components == "disk":
             self.hydro.dm_particles.add_particles(self.particles)
-
-
-
     
-    def make_stars(self):
+    def _make_stars(self):
+        """
+        Function to generate the binary system. This is only used internally and should not be called.
+        """
         stars = new_binary_from_orbital_elements(self.m1, self.m2, self.semimaj, self.ecc, G=constants.G)
         stars[0].name = "Primary"
         stars[1].name = "Secondary"
         self.particles.add_particles(stars)
         self.all_particles.add_particles(stars)
 
-    def make_disk(self):
+    def _make_disk(self):
+        """
+        Function to generate the disk. This is only used internally and should not be called.
+        """
         if self.components == "disk":
             s = Particles(1)
             s.mass = self.m1
@@ -148,16 +158,19 @@ class BinaryDisk(object):
         
         masses = Mdisk / float(self.ndisk)
         disk.mass = masses
-        rho = 3.0 | (units.g / units.cm**3)
+        rho = self.density
         disk.radius = (disk.mass / (4 * rho))**(1./3.)
-        #disk.h_smooth = self.rin ? 
+        #disk.h_smooth = self.rin 
         self.gas_particles.add_particles(disk)
         self.all_particles.add_particles(disk)
 
         
-    def setup(self):
-        self.make_stars()
-        self.make_disk()
+    def _setup(self):
+        """
+        Internal
+        """
+        self._make_stars()
+        self._make_disk()
 
 
 
@@ -238,16 +251,21 @@ class BinaryDisk(object):
             plt.close()
 
     def move_system(self, new_position):
+        """
+        Move the whole system  to a new position
+        """
         unit = new_position.unit
         x, y, z = new_position.number
-        
-        if self.components == "disk":
-            self.gas_particles.position += (x, y, z) | unit
-        else:
-            self.all_particles.position += (x, y, z) | unit
+        self.gas_particles.position += (x, y, z) | unit
+        self.particles.position += (x, y, z) | unit
+        self.all_particles.position += (x, y, z) | unit
+        if not self.components == "stars":
+            self.hydro.particles.position += (x, y, z) | unit
+        if not self.components == "disk":
+            self.gravity.particles.position += (x, y, z) | unit
 
 
-    def channel(self):
+    def _channel(self):
         channel = {"from_stars": self.all_particles.new_channel_to(self.gravity.particles),
                   "to_stars": self.gravity.particles.new_channel_to(self.all_particles),
                   "from_disk": self.all_particles.new_channel_to(self.hydro.particles),
@@ -257,7 +275,7 @@ class BinaryDisk(object):
         return channel
 
     #@jit(nopython=True)
-    def bridge(self):
+    def _bridge(self):
         gravhydro = bridge.Bridge(use_threading=False, method=SPLIT_4TH_S_M4)
         gravhydro.add_system(self.gravity, (self.hydro,))
         gravhydro.add_system(self.hydro, (self.gravity,))
@@ -265,8 +283,20 @@ class BinaryDisk(object):
         return gravhydro
         
     #@jit(nopython=True)
-    def evolve(self, tend, display="all", plot=False, plot3d=False, backup = False, 
+    def evolve(self, tend, plot=False, plot3d=False, display="all", backup = False, 
                backup_file = f"simulation_backup.hdf5", backup_dt = 10, verbose=False):
+
+        """
+        Evolution function:
+        @tend: time to evolve to.
+        @plot: bool; save .pngs for each frame
+        @plot3d: bool; save .pngs of 3d plots for each frame. 
+        @display: ["gas", "hydro", "stars", "gravity"] or "all"; flags what source to use for the plot
+        @backup: bool; flags whether period backups of the system should be made during evolution
+        @backup_file: str; backup file name
+        @backup_dt: int; timestep for backups. Frequent backups could slow the simulation down
+        @verbose: bool; displays the average position of particles in different sources 
+        """
 
         if tend < self.system_time:
             print(f"System is already evolved to {self.system_time}")
@@ -277,8 +307,8 @@ class BinaryDisk(object):
         elif self.components == "disk":
             self.evolve_hydro_only(tend, display, plot, verbose)
         else:
-            channel = self.channel()
-            code = self.bridge()
+            channel = self._channel()
+            code = self._bridge()
             time = 0 | units.yr
             dt =  code.timestep
             loops = 0
@@ -316,7 +346,11 @@ class BinaryDisk(object):
             #self.hydro.stop()
 
     def evolve_gravity_only(self, tend, part=["stars", "gravity"], plot=False, plot3d=False, verbose=False):
-        channel = self.channel()
+        """
+        Same as normal evolve but using only Ph4. 
+        This will be called automatically if the class is initialised with components="stars".
+        """
+        channel = self._channel()
         code = self.gravity
         time = 0 | units.yr
         dt = self.gravity.parameters.timestep_parameter | units.yr
@@ -345,7 +379,11 @@ class BinaryDisk(object):
         
 
     def evolve_hydro_only(self, tend, part=["gas","hydro"], plot=False, plot3d=False, verbose=False):
-        channel = self.channel()
+        """
+        Same as normal evolve but using only Fi. 
+        This will be called automatically if the class is initialised with components="disk".
+        """
+        channel = self._channel()
         code = self.hydro
         time = 0 | units.yr
         dt = code.parameters.timestep
@@ -373,7 +411,10 @@ class BinaryDisk(object):
 
 
     def evolve_without_bridge(self, dt, tend, part="all", plot=False, plot3d=False, verbose=False):
-        channel = self.channel()
+        """
+        Same as normal evolve but using Ph4 and Fi without bridge. Should only be called for debugging probably
+        """
+        channel = self._channel()
         time = 0 | units.yr
         print("Starting simulation without bridge...")
         
@@ -395,6 +436,12 @@ class BinaryDisk(object):
     
     
     def save_particles(self, filename, memory="all", ow=False):
+        """
+        Exports the system as a .hdf5 amuse file. (as a particle set)
+        @filename: str; backup file name
+        @memory: "all", "gas", "particles"; select which source to export
+        @ow: bool; overwrite existing file flag.
+        """
         try:
             if memory == "all":
                 write_set_to_file(self.all_particles, f'{filename}.hdf5', 'amuse', overwrite_file=ow)
