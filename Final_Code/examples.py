@@ -1,5 +1,7 @@
-from binary_disk import BinaryDisk
+from binary_disk import BinaryDisk # %run on jupyter
+from supernova import Supernova
 
+# PART 1 examples ---------------------------------------------------------------------------
 # Make a system using the class and choosing the components (="all" by default).
 # you can evolve using system.evolve(tend, display="all", plot=True, verbose=False) or system.evolve_without_bridge(tend, plot=True).
 # system.plot_system(show=True) will show a snapshot of the system
@@ -39,6 +41,27 @@ new_system.plot_system(show=True)
 # If you want to save during a simulation because it may crash, you can use the backup parameter in evolve():
 # backup_dt: the system will be backed up to the file every backup_dt timesteps. 
 system.evolve(tend, plot=True, verbose=False, backup=True, backup_file="backup.hdf5", backup_dt = 10)
+
+
+# PART 2 examples --------------------------------------------------------------------------------
+
+# Make a system and move it at the desired distance from the supernova.
+# The supernova will always explode at position (0,0,0).
+system = BinaryDisk(components="disk")
+p = (10, 0, 0) | units.au
+system.move_system(p)
+
+# Insert the system's particles in a supernova object using the external_object parameter
+pickle = "tmpow7eucrj/test.pkl"
+sn = Supernova(pickle=pickle, nparticles=10000, external_object=system.all_particles) # maybe we can also just use system.gas_particles here
+sn.evolve(3| units.day, plot=True)
+
+# Evolve the object to look at the effects
+system.evolve(5 | units.yr, plot=True)
+
+# Notes: the class object remembers if you evolved a system before, so it will keep simulating from the last timestep unless you re-initialise.
+# There's no problem with this if you call components='all' and evolve with bridge, but there will be some strange stuff happening if you evolve a disk only (part2)
+# nothing breaking but you may get some still frames in your gifs.
 
 
 
