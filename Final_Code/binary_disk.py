@@ -59,6 +59,12 @@ class BinaryDisk(object):
         self.system_time = 0 | units.yr
         self.converter = nbody_system.nbody_to_si(self.m1, 1 | units.au)
 
+        self.parameters = {"components": self.components, "mass1": self.m1,
+                  "mass2": self.m2, "semi-major axis": self.semimaj,
+                  "ecc": self.ecc, "disk inner radius": self.rin,
+                  "disk outer radius": self.rout, "n disk": self.ndisk,
+                  "system time": self.system_time}
+
         if from_set is None:
 
             if components == "all": 
@@ -231,6 +237,15 @@ class BinaryDisk(object):
             plt.savefig(savename)
             plt.close()
 
+    def move_system(self, new_position):
+        unit = new_position.unit
+        x, y, z = new_position.number
+        
+        if self.components == "disk":
+            self.gas_particles.position += (x, y, z) | unit
+        else:
+            self.all_particles.position += (x, y, z) | unit
+
 
     def channel(self):
         channel = {"from_stars": self.all_particles.new_channel_to(self.gravity.particles),
@@ -264,7 +279,7 @@ class BinaryDisk(object):
         else:
             channel = self.channel()
             code = self.bridge()
-            time = self.system_time
+            time = 0 | units.yr
             dt =  code.timestep
             loops = 0
             
@@ -275,12 +290,12 @@ class BinaryDisk(object):
                 self.system_time += dt
                 loops += 1
                 
-                print(f"System evolved to: {time.in_(tend.unit)}")
+                print(f"System evolved to: {self.system_time.in_(tend.unit)}")
                 channel["to_stars"].copy()
                 channel["to_disk"].copy()
 
                 if backup == True and loops % backup_dt == 0:
-                    write_set_to_file(self.all_particles.savepoint(time), backup_file, 'amuse', overwrite_file=True)
+                    write_set_to_file(self.all_particles.savepoint(self.system_time), backup_file, 'amuse', overwrite_file=True)
                 
                 if verbose:
                     print("------------------", "\n")
@@ -292,7 +307,7 @@ class BinaryDisk(object):
                     print("\n")
                     
                 if plot:
-                    self.plot_system(part=display, save=True, save_name=f"disk_{time.number:.3f} {time.unit}.png", time=time)
+                    self.plot_system(part=display, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
             print("Done.")
             #self.gravity.stop() better to stop them manually when you want
             #self.hydro.stop()
@@ -300,7 +315,7 @@ class BinaryDisk(object):
     def evolve_gravity_only(self, tend, part=["stars", "gravity"], plot=False, verbose=False):
         channel = self.channel()
         code = self.gravity
-        time = self.system_time
+        time = 0 | units.yr
         dt = self.gravity.parameters.timestep_parameter | units.yr
     
         print("Starting simulation...")
@@ -308,7 +323,7 @@ class BinaryDisk(object):
             time += 1 | units.yr
             self.system_time += 1 | units.yr
             code.evolve_model(time)
-            print(f"System evolved to: {time}")
+            print(f"System evolved to: {self.system_time}")
             channel["to_stars"].copy()
             channel["from_stars"].copy()
             if verbose:
@@ -319,14 +334,14 @@ class BinaryDisk(object):
                 print("\n")
                 
             if plot:
-                self.plot_system(part=part, save=True, save_name=f"disk_{time.number:.3f} {time.unit}.png", time=time)
+                self.plot_system(part=part, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
         print("Done.")
         
 
     def evolve_hydro_only(self, tend, part=["gas","hydro"], plot=False, verbose=False):
         channel = self.channel()
         code = self.hydro
-        time = self.system_time
+        time = 0 | units.yr
         dt = code.parameters.timestep
         
         print("Starting simulation...")
@@ -334,7 +349,7 @@ class BinaryDisk(object):
             time += dt
             self.system_time += dt
             code.evolve_model(time)
-            print(f"System evolved to: {time}")
+            print(f"System evolved to: {self.system_time}")
             channel["h_to_all"].copy()
 
             if verbose:
@@ -345,13 +360,13 @@ class BinaryDisk(object):
                 print("\n")
                 
             if plot:
-                self.plot_system(part=part, save=True, save_name=f"disk_{time.number:.3f} {time.unit}.png", time=time)
+                self.plot_system(part=part, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
         print("Done.")
 
 
     def evolve_without_bridge(self, dt, tend, part="all",plot=False, verbose=False):
         channel = self.channel()
-        time = self.system_time
+        time = 0 | units.yr
         print("Starting simulation without bridge...")
         
         while time < tend:
@@ -365,7 +380,7 @@ class BinaryDisk(object):
             channel["h_to_all"].copy()
 
             if plot:
-                self.plot_system(part=part, save=True, save_name=f"disk_{time.number:.3f} {time.unit}.png", time=time)
+                self.plot_system(part=part, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
 
     
     
@@ -396,5 +411,9 @@ class BinaryDisk(object):
         f"3. All particles (self.all_particles): {len(self.all_particles)}", "\n",
         f"Particles in the gravity code: {len(self.gravity.particles)}", "\n"
         f" Particles in the hydro code: {len(self.hydro.particles)}")
+        f"Additioanl Parameters:","\n",
+        f"{self.parameters}",
+        f"You can export the system to file using save_particles(filename, memory, ow)", "\n"
+        f" You can backup the system during the simulation using the backup parameter in the evolve function."
         return ""
 
