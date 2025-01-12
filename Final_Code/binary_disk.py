@@ -272,6 +272,7 @@ class BinaryDisk(object):
             while time < tend:
                 code.evolve_model(time)
                 time += dt
+                self.system_time += dt
                 loops += 1
                 
                 print(f"System evolved to: {time.in_(tend.unit)}")
@@ -305,6 +306,7 @@ class BinaryDisk(object):
         print("Starting simulation...")
         while time < tend:
             time += 1 | units.yr
+            self.system_time += 1 | units.yr
             code.evolve_model(time)
             print(f"System evolved to: {time}")
             channel["to_stars"].copy()
@@ -330,6 +332,7 @@ class BinaryDisk(object):
         print("Starting simulation...")
         while time < tend:
             time += dt
+            self.system_time += dt
             code.evolve_model(time)
             print(f"System evolved to: {time}")
             channel["h_to_all"].copy()
@@ -353,6 +356,7 @@ class BinaryDisk(object):
         
         while time < tend:
             time += dt
+            self.system_time += dt
             self.gravity.evolve_model(time)
             print(f"Ph4 evolved to: {time}")
             self.hydro.evolve_model(time)
