@@ -11,6 +11,9 @@ system.plot_system(show=True) # This will show a snapshot of the system
 t_100 | units.yr
 system.evolve(t_end, plot=True, verbose=False)
 
+system.save_particles('ev_100')
+print(system) # Save the parameters manually if you need them, it's not really worth the effort to implement an automation for this i don't think
+
 
 # Animation - this method only works if you don't have other pngs in your directory.
 files = glob.glob("*.png")
