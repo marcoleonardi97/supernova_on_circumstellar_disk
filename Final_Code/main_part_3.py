@@ -4,17 +4,21 @@ from supernova import Supernova
 # Problem with this code: you still have to change the position of the disk manually from the class code (don't move the supernova or it will fuck up)
 # i'll implement a way to call the disk position from the initialisation
 
-# Let's evolve a normal disk before (no binary)
+# Let's evolve a binary disk before 
 system = BinaryDisk(components="all")
-system.evolve(3 | units.yr, plot=True)
+system.evolve(50 | units.yr, plot=True)
+
+# or import the saved one (50.hdf5 is a system evolved for 55 or 56 yrs)
+imported = read_set_from_file('50.hdf5', 'amuse')
+system = BinaryDisk(from_set=imported)
 
 # Let's have the supernova hit it
 pickle = "tmpow7eucrj/test.pkl"
 sn = Supernova(pickle=pickle, nparticles=10000, external_object=system.all_particles)
 sn.evolve(2 | units.day, plot=True)
 
-# Now let's look at the effects on the disk
-system.evolve(6 | units.yr, plot=True)
+# Now let's look at the effects on the disk...
+system.evolve(10 | units.yr, plot=True)
 
 
 # Make the animation (in jupyter lab you can run this between each evolution, i could also just make this a function)
