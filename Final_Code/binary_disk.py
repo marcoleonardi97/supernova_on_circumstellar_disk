@@ -265,7 +265,7 @@ class BinaryDisk(object):
         return gravhydro
         
     #@jit(nopython=True)
-    def evolve(self, tend, display="all", plot=False, backup = False, 
+    def evolve(self, tend, display="all", plot=False, plot3d=False, backup = False, 
                backup_file = f"simulation_backup.hdf5", backup_dt = 10, verbose=False):
 
         if tend < self.system_time:
@@ -308,11 +308,14 @@ class BinaryDisk(object):
                     
                 if plot:
                     self.plot_system(part=display, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
+
+                if plot3d:
+                    self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
             print("Done.")
             #self.gravity.stop() better to stop them manually when you want
             #self.hydro.stop()
 
-    def evolve_gravity_only(self, tend, part=["stars", "gravity"], plot=False, verbose=False):
+    def evolve_gravity_only(self, tend, part=["stars", "gravity"], plot=False, plot3d=False, verbose=False):
         channel = self.channel()
         code = self.gravity
         time = 0 | units.yr
@@ -335,10 +338,13 @@ class BinaryDisk(object):
                 
             if plot:
                 self.plot_system(part=part, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
+
+            if plot3d:
+                self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
         print("Done.")
         
 
-    def evolve_hydro_only(self, tend, part=["gas","hydro"], plot=False, verbose=False):
+    def evolve_hydro_only(self, tend, part=["gas","hydro"], plot=False, plot3d=False, verbose=False):
         channel = self.channel()
         code = self.hydro
         time = 0 | units.yr
@@ -361,10 +367,12 @@ class BinaryDisk(object):
                 
             if plot:
                 self.plot_system(part=part, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
+            if plot3d:
+                self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
         print("Done.")
 
 
-    def evolve_without_bridge(self, dt, tend, part="all",plot=False, verbose=False):
+    def evolve_without_bridge(self, dt, tend, part="all", plot=False, plot3d=False, verbose=False):
         channel = self.channel()
         time = 0 | units.yr
         print("Starting simulation without bridge...")
@@ -381,6 +389,8 @@ class BinaryDisk(object):
 
             if plot:
                 self.plot_system(part=part, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
+            if plot3d:
+                self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
 
     
     
