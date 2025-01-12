@@ -100,8 +100,14 @@ class Supernova(object):
         self.external_code.particles.add_particles(self.external_object)
 
     def explode(self, 
+        
                         explosion_energy=1.0e+51|units.erg,
                         exploding_region=10|units.RSun):
+
+        """
+        Supernova energy injection function:
+        Injects 10e51 ergs of energy divided into all the particles inside the exploding region squared.
+        """
         inner = self.gas_without_core.select(
             lambda pos: pos.length_squared() < exploding_region**2,
             ["position"])
@@ -113,11 +119,21 @@ class Supernova(object):
     def bridge(self):
         bridged = bridge.Bridge(use_threading=False, method=SPLIT_4TH_S_M4)
         bridged.add_system(self.hydro, (self.external_code,))
+        bridged.add_system(self.external_code, (self.hydro,)) # probably don't need this, but also probably doesn't change anything unfortunately
         bridged.timestep = self.hydro.parameters.timestep
         return bridged
         
 
     def evolve(self, tend, plot=False, plot3d = False, verbose=False):
+        """
+        Evolve the system:
+        @tend: time - this will be added and remembered in the system_time. 
+                      if you evolve the same system twice it will restart 
+                      from the last timestep.
+        @plot: bool - This will save a .png for each timestep of the evolution
+        @plot3d: bool - will save a .png of a 3d plot for each timestep
+        @verbose: bool - will print average position of particles to see what's moving.
+        """
         time = 0 | units.day
         
         if self.external_object is None:
@@ -126,7 +142,6 @@ class Supernova(object):
             code = self.bridge()
             
         while time < tend:
-            #self.hydro.evolve_model(time)
             code.evolve_model(time)
             print(f"Evolution: {time.in_(tend.unit)}")
             time += self.hydro.parameters.timestep
@@ -147,17 +162,20 @@ class Supernova(object):
     
     def plot_system(self, show=False, save=False, time=None):
         plt.figure()
-        l = 10
+        if self.external_object is None:
+            l = 10
+        else: 
+            l = max(self.external_object.x.in_(units.au)).number
         plt.xlim(-l,l)
         plt.ylim(-l,l)
     
-        scatter(self.hydro.gas_particles.x.in_(units.au), self.hydro.gas_particles.y.in_(units.au), c='orange', alpha=0.1, label="SN")
+        scatter(self.hydro.gas_particles.x.in_(units.au), self.hydro.gas_particles.y.in_(units.au), c='blue', alpha=0.1, label="SN")
         scatter(self.hydro.dm_particles.x.in_(units.au), self.hydro.dm_particles.y.in_(units.au), marker='*', c='yellow', label="Core")
         if self.external_object is not None:
             try:
-                scatter(self.external_object.x.in_(units.au), self.external_object.y.in_(units.au), c='blue', alpha=0.1, label=self.external_object.name[0])
+                scatter(self.external_object.x.in_(units.au), self.external_object.y.in_(units.au), c='orange', alpha=0.1, label=self.external_object.name[0])
             except:
-                 scatter(self.external_object.x.in_(units.au), self.external_object.y.in_(units.au), c='blue', alpha=0.1, label="External Object")
+                 scatter(self.external_object.x.in_(units.au), self.external_object.y.in_(units.au), c='orange', alpha=0.1, label="External Object")
          
         plt.legend(loc='upper right')
         
@@ -179,7 +197,10 @@ class Supernova(object):
         
         # Create a 3D plot
         fig = plt.figure()
-        l = 10
+        if self.external_object is None:
+            l = 10
+        else: 
+            l = max(self.external_object.x.in_(units.au)).number
         ax = fig.add_subplot(111, projection='3d')
     
         ax.set_xlim(-l,l)
@@ -192,9 +213,9 @@ class Supernova(object):
             ey = self.external_object.y.in_(units.au)
             ez = self.external_object.z.in_(units.au)
             try:
-                ax.scatter(ex.number, ey.number, ez.number,c='blue', alpha=0.1, label=self.external_object.name[0])
+                ax.scatter(ex.number, ey.number, ez.number,c='orange', alpha=0.1, label=self.external_object.name[0])
             except:
-                 ax.scatter(ex.number, ey.number, ez.number, c='blue', alpha=0.1, label="External Object")
+                 ax.scatter(ex.number, ey.number, ez.number, c='orange', alpha=0.1, label="External Object")
      
         plt.legend(loc='upper right')
         ax.set_xlabel('X au')
