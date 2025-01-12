@@ -252,6 +252,11 @@ class BinaryDisk(object):
     #@jit(nopython=True)
     def evolve(self, tend, display="all", plot=False, backup = False, 
                backup_file = f"simulation_backup.hdf5", backup_dt = 10, verbose=False):
+
+        if tend < self.system_time:
+            print(f"System is already evolved to {self.system_time}")
+            print(f"(Plots will looks still until the code evolves past that.)")
+            
         if self.components == "stars":
             self.evolve_gravity_only(tend, display, plot, verbose)
         elif self.components == "disk":
@@ -259,14 +264,12 @@ class BinaryDisk(object):
         else:
             channel = self.channel()
             code = self.bridge()
-            time = 0 | units.yr
+            time = self.system_time
             dt =  code.timestep
-            #dt = 0.1 | units.yr
             loops = 0
+            
             print("Starting simulation...")
             while time < tend:
-                
-                self.system_time += dt
                 code.evolve_model(time)
                 time += dt
                 loops += 1
@@ -290,18 +293,18 @@ class BinaryDisk(object):
                 if plot:
                     self.plot_system(part=display, save=True, save_name=f"disk_{time.number:.3f} {time.unit}.png", time=time)
             print("Done.")
-            self.gravity.stop()
-            self.hydro.stop()
+            #self.gravity.stop() better to stop them manually when you want
+            #self.hydro.stop()
 
     def evolve_gravity_only(self, tend, part=["stars", "gravity"], plot=False, verbose=False):
         channel = self.channel()
         code = self.gravity
-        time = 0 | units.yr
+        time = self.system_time
         dt = self.gravity.parameters.timestep_parameter | units.yr
+    
         print("Starting simulation...")
         while time < tend:
             time += 1 | units.yr
-            self.system_time += dt
             code.evolve_model(time)
             print(f"System evolved to: {time}")
             channel["to_stars"].copy()
@@ -321,16 +324,14 @@ class BinaryDisk(object):
     def evolve_hydro_only(self, tend, part=["gas","hydro"], plot=False, verbose=False):
         channel = self.channel()
         code = self.hydro
-        time = 0 | units.yr
+        time = self.system_time
         dt = code.parameters.timestep
+        
         print("Starting simulation...")
         while time < tend:
             time += dt
-            self.system_time += dt
             code.evolve_model(time)
             print(f"System evolved to: {time}")
-            #channel["to_disk"].copy()
-            #channel["from_disk"].copy()
             channel["h_to_all"].copy()
 
             if verbose:
@@ -347,11 +348,11 @@ class BinaryDisk(object):
 
     def evolve_without_bridge(self, dt, tend, part="all",plot=False, verbose=False):
         channel = self.channel()
-        time = 0 | units.yr
+        time = self.system_time
         print("Starting simulation without bridge...")
+        
         while time < tend:
             time += dt
-            self.system_time += dt
             self.gravity.evolve_model(time)
             print(f"Ph4 evolved to: {time}")
             self.hydro.evolve_model(time)
