@@ -80,7 +80,7 @@ class Supernova(object):
 
         self.core.position = (0, 0, 0) | units.au
         self.gas_without_core.h_smooth = 0.6 | units.AU
-        self.explode() 
+        self._explode() 
 
         self.converter = nbody_system.nbody_to_si(self.mass, self.core_radius)
         self.hydro = Fi(self.converter,mode='openmp',redirection='none')
@@ -99,7 +99,7 @@ class Supernova(object):
         self.external_code = Fi(self.converter, mode='openmp', redirection='none')
         self.external_code.particles.add_particles(self.external_object)
 
-    def explode(self, 
+    def _explode(self, 
         
                         explosion_energy=1.0e+51|units.erg,
                         exploding_region=10|units.RSun):
@@ -116,7 +116,7 @@ class Supernova(object):
             "(specific internal) energy to each of the n=", len(inner), "SPH particles.")
         inner.u += explosion_energy / inner.total_mass()
 
-    def bridge(self):
+    def _bridge(self):
         bridged = bridge.Bridge(use_threading=False, method=SPLIT_4TH_S_M4)
         bridged.add_system(self.hydro, (self.external_code,))
         bridged.add_system(self.external_code, (self.hydro,)) # probably don't need this, but also probably doesn't change anything unfortunately
@@ -139,7 +139,7 @@ class Supernova(object):
         if self.external_object is None:
             code = self.hydro
         else:
-            code = self.bridge()
+            code = self._bridge()
             
         while time < tend:
             code.evolve_model(time)
