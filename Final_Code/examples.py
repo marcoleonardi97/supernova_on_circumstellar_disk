@@ -59,6 +59,13 @@ system.evolve(tend, plot=True, verbose=False)
 files = glob.glob("*.png") # This will select all of your pngs
 make_animation('binary_stars', files)
 
+# Plotting a parameter:
+system = BinaryDisk(rin = 4 | units.au, rout = 5 | units.au, components = "all") 
+system.evolve(tend, monitor_parameter="sigma_v") # Will monitor the velocity dispersion during the simulation
+system.plot_parameter("Velocity dispersion")
+
+# accepted input parameters: 'sigma_v': velocity dispersion
+
 
 #------- How to export and import existing systems ---------#
 
