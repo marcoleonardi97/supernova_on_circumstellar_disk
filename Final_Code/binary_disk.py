@@ -527,11 +527,11 @@ class BinaryDisk(object):
         f"2. Gas particles (self.gas_particles): {len(self.gas_particles)}", "\n",
         f"3. All particles (self.all_particles): {len(self.all_particles)}", "\n",
         f"Particles in the gravity code: {len(self.gravity.particles)}", "\n",
-        f" Particles in the hydro code: {len(self.hydro.particles)}"), "\n",
+        f" Particles in the hydro code: {len(self.hydro.particles)}", "\n",
         f"Additioanl Parameters:","\n",
         f"{self.parameters}",
         f"{self.monitor}",
         f"You can export the system to file using save_particles(filename, memory, ow)", "\n",
-        f" You can backup the system during the simulation using the backup parameter in the evolve function."
+        f" You can backup the system during the simulation using the backup parameter in the evolve function.")
         return ""
 
