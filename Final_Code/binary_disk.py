@@ -98,7 +98,7 @@ class BinaryDisk(object):
         # Grav
         self.gravity = Ph4(self.converter)
         self.gravity.particles.add_particles(self.all_particles)
-        self.gravity.parameters.timestep_parameter = 0.07
+        self.gravity.parameters.timestep_parameter = 0.1 #0.07 is best but whatever
         self.gravity.parameters.epsilon_squared = 1./self.ndisk**(2./3) | units.au**2  # 0.01 au **2 with 1000 particles, sometimes it works sometimes it doesn't
 
         # Hydro
