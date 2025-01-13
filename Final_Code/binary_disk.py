@@ -220,15 +220,15 @@ class BinaryDisk(object):
         if save:
             plt.savefig(save_name)
             plt.close()
-
-       def plot3d(self, show=False, save=False, savename=None, time=None):
+    
+    def plot3d(self, show=False, save=False, savename=None, time=None):
     
         x = self.all_particles.x.in_(units.au)
         y = self.all_particles.y.in_(units.au)
         z = self.all_particles.z.in_(units.au)
         star = self.all_particles[self.all_particles.name=="Primary"]
         planet = self.all_particles[self.all_particles.name=="Secondary"]
-
+    
         # Create a 3D plot
         fig = plt.figure()
         l = 2 * self.semimaj.number
@@ -386,7 +386,7 @@ class BinaryDisk(object):
             #self.gravity.stop() better to stop them manually when you want
             #self.hydro.stop()
 
-    def evolve_gravity_only(self, tend, part=["stars", "gravity"], plot=False, plot3d=False, monitor_parameter=None verbose=False):
+    def evolve_gravity_only(self, tend, part=["stars", "gravity"], plot=False, plot3d=False, monitor_parameter=None, verbose=False):
         """
         Same as normal evolve but using only Ph4. 
         This will be called automatically if the class is initialised with components="stars".
