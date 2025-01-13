@@ -210,7 +210,6 @@ class BinaryDisk(object):
             scatter(planet.x, planet.y, marker='*', c='y',s=120, label="Secondary Star")
             
         plt.legend(loc='upper right')
-        plt.close()
         if time is not None:
             plt.title(f"Disk at {time.number:.2f} {time.unit}")
 
