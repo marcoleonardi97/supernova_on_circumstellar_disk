@@ -530,7 +530,6 @@ class BinaryDisk(object):
         f" Particles in the hydro code: {len(self.hydro.particles)}", "\n",
         f"Additioanl Parameters:","\n",
         f"{self.parameters}",
-        f"{self.monitor}",
         f"You can export the system to file using save_particles(filename, memory, ow)", "\n",
         f" You can backup the system during the simulation using the backup parameter in the evolve function.")
         return ""
