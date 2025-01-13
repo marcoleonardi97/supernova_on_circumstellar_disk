@@ -9,7 +9,6 @@ import imageio.v2 as imageio
 from matplotlib.animation import FuncAnimation, PillowWriter
 from mpl_toolkits.mplot3d import Axes3D
 
-
 from amuse.lab import Particles
 from amuse.units import nbody_system
 
@@ -376,8 +375,12 @@ class BinaryDisk(object):
 
                 if plot3d:
                     self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
-                if monitor_parameter is not None:
+                if monitor_parameter in self.monitor:
                     self.p_history.append(self.monitor[monitor_parameter]())
+                else:
+                    print(f"{monitor_parameter} is not yet a supported plottable parameter.", "\n")
+                    print(f"Please choose one from: {self.monitor.keys()}")
+                    return 
                     
             print("Done.")
             #self.gravity.stop() better to stop them manually when you want
@@ -414,8 +417,12 @@ class BinaryDisk(object):
 
             if plot3d:
                 self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
-            if monitor_parameter is not None:
+            if monitor_parameter in self.monitor:
                 self.p_history.append(self.monitor[monitor_parameter]())
+            else:
+                print(f"{monitor_parameter} is not yet a supported plottable parameter.", "\n")
+                print(f"Please choose one from: {self.monitor.keys()}")
+                return 
         print("Done.")
         
 
@@ -449,8 +456,12 @@ class BinaryDisk(object):
                 self.plot_system(part=part, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
             if plot3d:
                 self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
-            if monitor_parameter is not None:
+            if monitor_parameter in self.monitor:
                 self.p_history.append(self.monitor[monitor_parameter]())
+            else:
+                print(f"{monitor_parameter} is not yet a supported plottable parameter.", "\n")
+                print(f"Please choose one from: {self.monitor.keys()}")
+                return 
         print("Done.")
 
 
@@ -477,8 +488,12 @@ class BinaryDisk(object):
                 self.plot_system(part=part, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
             if plot3d:
                 self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
-            if monitor_parameter is not None:
+            if monitor_parameter in self.monitor:
                 self.p_history.append(self.monitor[monitor_parameter]())
+            else:
+                print(f"{monitor_parameter} is not yet a supported plottable parameter.", "\n")
+                print(f"Please choose one from: {self.monitor.keys()}")
+                return 
 
     def save_particles(self, filename, memory="all", ow=False):
         """
@@ -515,6 +530,7 @@ class BinaryDisk(object):
         f" Particles in the hydro code: {len(self.hydro.particles)}")
         f"Additioanl Parameters:","\n",
         f"{self.parameters}",
+        f"{self.monitor}",
         f"You can export the system to file using save_particles(filename, memory, ow)", "\n"
         f" You can backup the system during the simulation using the backup parameter in the evolve function."
         return ""
