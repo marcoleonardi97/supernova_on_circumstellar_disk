@@ -1,5 +1,8 @@
-Outline (old):
-https://docs.google.com/document/d/1dHtwYFsnluikh4RLamNygjsehVWr4a8ct8pp-gWv71c/edit?tab=t.0
+The final code uses two different custom classes to simulate all the systems we need: BinaryDisk() and Supernova().
+These allow for good customisation and debugging (i hope), simple evolution and for different methods of plotting.
+They are kind of documented in the examples folder.  
+
+-------------------------------
 
 Simulating a supernova explosion in the vicinity of a proto-planetary disk, with and without an additional perturbing object. 
 
