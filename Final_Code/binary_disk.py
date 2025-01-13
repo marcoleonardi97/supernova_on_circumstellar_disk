@@ -293,7 +293,7 @@ class BinaryDisk(object):
 
     def get_toomre(self):
         r = max(self.all_particles.x.in_(units.au)) #mmm
-        return self.disk_object.toomreQ(r)
+        return self.disk_object.toomreQ(r.number)
  
     def _channel(self):
         channel = {"from_stars": self.all_particles.new_channel_to(self.gravity.particles),
