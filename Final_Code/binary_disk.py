@@ -72,6 +72,9 @@ class BinaryDisk(object):
                   "disk outer radius": self.rout, "n disk": self.ndisk,
                   "system time": self.system_time}
 
+        self.monitor = {"sigma_v": self.get_velocity_dispersion}
+        self.p_history = []
+
         if from_set is None:
 
             if components == "all": 
@@ -250,6 +253,25 @@ class BinaryDisk(object):
             plt.savefig(savename)
             plt.close()
 
+    def plot_parameter(self, parameter_name):
+        if len(self.p_history) == 0:
+            print("No parameter saved.")
+            return
+        try:
+            unit = self.p_history[0].unit
+            y = [i.number for i in self.p_history] | unit
+        except:
+            unit = ""
+            y = self.p_history
+        time = np.arange(0, len(self.p_history)/10, 0.1)| units.yr
+        plt.figure()
+        plt.title(f"{parameter_name} evolution over {len(self.p_history)/10} years")
+        plt.xlabel("Time (yr)")
+        plt.ylabel(f"{parameter_name} ({unit})")
+        plot(time, y)
+        plt.savefig(f"{parameter_name}_plot.png")
+        plt.show()
+
     def move_system(self, new_position):
         """
         Move the whole system  to a new position
@@ -264,7 +286,9 @@ class BinaryDisk(object):
         if not self.components == "disk":
             self.gravity.particles.position += (x, y, z) | unit
 
-
+    def get_velocity_dispersion(self):
+        return np.sqrt(np.mean(np.sum((system.all_particles.velocity - np.mean(system.all_particles.velocity, axis=0))**2, axis=1))).in_(units.kms)
+ 
     def _channel(self):
         channel = {"from_stars": self.all_particles.new_channel_to(self.gravity.particles),
                   "to_stars": self.gravity.particles.new_channel_to(self.all_particles),
@@ -283,7 +307,7 @@ class BinaryDisk(object):
         return gravhydro
         
     #@jit(nopython=True)
-    def evolve(self, tend, plot=False, plot3d=False, display="all", backup = False, 
+    def evolve(self, tend, plot=False, plot3d=False, monitor_parameter=None, display="all", backup = False, 
                backup_file = f"simulation_backup.hdf5", backup_dt = 10, verbose=False):
 
         """
@@ -291,6 +315,7 @@ class BinaryDisk(object):
         @tend: time to evolve to.
         @plot: bool; save .pngs for each frame
         @plot3d: bool; save .pngs of 3d plots for each frame. 
+        @monitor_parameter: ["sigma_v"]; 
         @display: ["gas", "hydro", "stars", "gravity"] or "all"; flags what source to use for the plot
         @backup: bool; flags whether period backups of the system should be made during evolution
         @backup_file: str; backup file name
@@ -312,6 +337,7 @@ class BinaryDisk(object):
             time = 0 | units.yr
             dt =  code.timestep
             loops = 0
+            self.p_history = []
             
             print("Starting simulation...")
             while time < tend:
@@ -334,6 +360,7 @@ class BinaryDisk(object):
                     print("Local self.particles (stars): ", np.mean(self.particles.x.in_(units.au)))
                     print("Local self.gas_particles (disk): ", np.mean(self.gas_particles.x.in_(units.au)))
                     print("Local self.all_particles: ", np.mean(self.all_particles.x.in_(units.au)))
+                    print("Monitored parameter: ", self.p_history)
                     print("\n")
                     
                 if plot:
@@ -341,11 +368,14 @@ class BinaryDisk(object):
 
                 if plot3d:
                     self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
+                if monitor_parameter is not None:
+                    self.p_history.append(self.monitor[monitor_parameter]())
+                    
             print("Done.")
             #self.gravity.stop() better to stop them manually when you want
             #self.hydro.stop()
 
-    def evolve_gravity_only(self, tend, part=["stars", "gravity"], plot=False, plot3d=False, verbose=False):
+    def evolve_gravity_only(self, tend, part=["stars", "gravity"], plot=False, plot3d=False, monitor_parameter=None verbose=False):
         """
         Same as normal evolve but using only Ph4. 
         This will be called automatically if the class is initialised with components="stars".
@@ -354,6 +384,7 @@ class BinaryDisk(object):
         code = self.gravity
         time = 0 | units.yr
         dt = self.gravity.parameters.timestep_parameter | units.yr
+        self.p_history = []
     
         print("Starting simulation...")
         while time < tend:
@@ -375,10 +406,12 @@ class BinaryDisk(object):
 
             if plot3d:
                 self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
+            if monitor_parameter is not None:
+                self.p_history.append(self.monitor[monitor_parameter]())
         print("Done.")
         
 
-    def evolve_hydro_only(self, tend, part=["gas","hydro"], plot=False, plot3d=False, verbose=False):
+    def evolve_hydro_only(self, tend, part=["gas","hydro"], plot=False, plot3d=False, monitor_parameter=None, verbose=False):
         """
         Same as normal evolve but using only Fi. 
         This will be called automatically if the class is initialised with components="disk".
@@ -387,6 +420,7 @@ class BinaryDisk(object):
         code = self.hydro
         time = 0 | units.yr
         dt = code.parameters.timestep
+        self.p_history = []
         
         print("Starting simulation...")
         while time < tend:
@@ -407,15 +441,18 @@ class BinaryDisk(object):
                 self.plot_system(part=part, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
             if plot3d:
                 self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
+            if monitor_parameter is not None:
+                self.p_history.append(self.monitor[monitor_parameter]())
         print("Done.")
 
 
-    def evolve_without_bridge(self, dt, tend, part="all", plot=False, plot3d=False, verbose=False):
+    def evolve_without_bridge(self, dt, tend, part="all", plot=False, plot3d=False, monitor_parameter=None, verbose=False):
         """
         Same as normal evolve but using Ph4 and Fi without bridge. Should only be called for debugging probably
         """
         channel = self._channel()
         time = 0 | units.yr
+        self.p_history = []
         print("Starting simulation without bridge...")
         
         while time < tend:
@@ -432,9 +469,9 @@ class BinaryDisk(object):
                 self.plot_system(part=part, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
             if plot3d:
                 self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
+            if monitor_parameter is not None:
+                self.p_history.append(self.monitor[monitor_parameter]())
 
-    
-    
     def save_particles(self, filename, memory="all", ow=False):
         """
         Exports the system as a .hdf5 amuse file. (as a particle set)
