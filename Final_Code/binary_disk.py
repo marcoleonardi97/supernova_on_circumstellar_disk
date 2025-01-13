@@ -63,6 +63,7 @@ class BinaryDisk(object):
         self.particles = Particles()
         self.gas_particles = Particles()
         self.all_particles = Particles()
+        self.disk_object = None
         self.system_time = 0 | units.yr
         self.converter = nbody_system.nbody_to_si(self.m1, 1 | units.au)
 
@@ -72,7 +73,8 @@ class BinaryDisk(object):
                   "disk outer radius": self.rout, "n disk": self.ndisk,
                   "system time": self.system_time}
 
-        self.monitor = {"sigma_v": self.get_velocity_dispersion}
+        self.monitor = {"sigma_v": self.get_velocity_dispersion,
+                       "toomre": self.get_toomre}
         self.p_history = []
 
         if from_set is None:
@@ -148,12 +150,13 @@ class BinaryDisk(object):
             
         R = 1 | units.au
         Mdisk = self.m1 * 0.01
-        disk = ProtoPlanetaryDisk(self.ndisk,
+        disk_object = ProtoPlanetaryDisk(self.ndisk,
                           convert_nbody=self.converter,
                           Rmin=self.rin/R,
                           Rmax=self.rout/R,
                           q_out=1.0,
-                          discfraction=Mdisk/self.m1).result
+                          discfraction=Mdisk/self.m1)
+        disk = disk_object.result
         disk.name = "disk"
         disk.move_to_center()
         disk.position += self.particles[0].position
@@ -166,6 +169,7 @@ class BinaryDisk(object):
         #disk.h_smooth = self.rin 
         self.gas_particles.add_particles(disk)
         self.all_particles.add_particles(disk)
+        self.disk_object = disk_object
 
         
     def _setup(self):
@@ -288,6 +292,10 @@ class BinaryDisk(object):
 
     def get_velocity_dispersion(self):
         return np.sqrt(np.mean(np.sum((system.all_particles.velocity - np.mean(system.all_particles.velocity, axis=0))**2, axis=1))).in_(units.kms)
+
+    def get_toomre(self):
+        r = max(self.all_particles.x.in_(units.au)) #mmm
+        return self.disk_object.toomreQ(r)
  
     def _channel(self):
         channel = {"from_stars": self.all_particles.new_channel_to(self.gravity.particles),
