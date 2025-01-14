@@ -75,7 +75,8 @@ class BinaryDisk(object):
         self.monitor = {"sigma_v": self.get_velocity_dispersion,
                        "toomre": self.get_toomre,
                        "surface_density": self.get_surface_density}
-        self.p_history = []
+        self.storage = {"sigma_v": [], "toomre": [], 
+               "surface_density": []}
 
         if from_set is None:
 
@@ -424,12 +425,13 @@ class BinaryDisk(object):
 
             if plot3d:
                 self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
-            if monitor_parameter in self.monitor:
-                self.p_history.append(self.monitor[monitor_parameter]())
-            else:
-                print(f"{monitor_parameter} is not yet a supported plottable parameter.", "\n")
-                print(f"Please choose one from: {self.monitor.keys()}")
-                return 
+            for param in monitor_parameter:
+                if param in self.monitor:
+                    self.storage[param].append(self.monitor[param]())
+                else:
+                    print(f"{param} is not yet a supported plottable parameter.", "\n")
+                    print(f"Please choose one from: {self.monitor.keys()}")
+                    return 
         print("Done.")
         
 
@@ -463,12 +465,13 @@ class BinaryDisk(object):
                 self.plot_system(part=part, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
             if plot3d:
                 self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
-            if monitor_parameter in self.monitor:
-                self.p_history.append(self.monitor[monitor_parameter]())
-            else:
-                print(f"{monitor_parameter} is not yet a supported plottable parameter.", "\n")
-                print(f"Please choose one from: {self.monitor.keys()}")
-                return 
+            for param in monitor_parameter:
+                if param in self.monitor:
+                    self.storage[param].append(self.monitor[param]())
+                else:
+                    print(f"{param} is not yet a supported plottable parameter.", "\n")
+                    print(f"Please choose one from: {self.monitor.keys()}")
+                    return 
         print("Done.")
 
 
@@ -495,12 +498,13 @@ class BinaryDisk(object):
                 self.plot_system(part=part, save=True, save_name=f"disk_{self.system_time.number:.3f} {time.unit}.png", time=self.system_time)
             if plot3d:
                 self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
-            if monitor_parameter in self.monitor:
-                self.p_history.append(self.monitor[monitor_parameter]())
-            else:
-                print(f"{monitor_parameter} is not yet a supported plottable parameter.", "\n")
-                print(f"Please choose one from: {self.monitor.keys()}")
-                return 
+           for param in monitor_parameter:
+               if param in self.monitor:
+                   self.storage[param].append(self.monitor[param]())
+               else:
+                   print(f"{param} is not yet a supported plottable parameter.", "\n")
+                   print(f"Please choose one from: {self.monitor.keys()}")
+                    return 
 
     def save_particles(self, filename, memory="all", ow=False):
         """
