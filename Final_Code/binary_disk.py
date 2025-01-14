@@ -263,7 +263,7 @@ class BinaryDisk(object):
             return
         try:
             unit = self.storage[parameter][0].unit
-            y = [i.number for i in self.storage[parameter] | unit
+            y = [i.number for i in self.storage[parameter]] | unit
         except:
             unit = ""
             y = self.storage[parameter]
