@@ -257,23 +257,23 @@ class BinaryDisk(object):
             plt.savefig(savename)
             plt.close()
 
-    def plot_parameter(self, parameter_name):
-        if len(self.p_history) == 0:
+    def plot_parameter(self, parameter, title):
+        if len(self.storage[parameter]) == 0:
             print("No parameter saved.")
             return
         try:
-            unit = self.p_history[0].unit
-            y = [i.number for i in self.p_history] | unit
+            unit = self.storage[parameter][0].unit
+            y = [i.number for i in self.storage[parameter] | unit
         except:
             unit = ""
-            y = self.p_history
+            y = self.storage[parameter]
         time = np.arange(0, len(self.p_history)/10, 0.1)| units.yr
         plt.figure()
-        plt.title(f"{parameter_name} evolution over {len(self.p_history)/10} years")
+        plt.title(f"{title} evolution over {len(self.storage[parameter])/10} years")
         plt.xlabel("Time (yr)")
-        plt.ylabel(f"{parameter_name} ({unit})")
+        plt.ylabel(f"{parameter} ({unit})")
         plot(time, y)
-        plt.savefig(f"{parameter_name}_plot.png")
+        plt.savefig(f"{parameter}_plot.png")
         plt.show()
 
     def move_system(self, new_position):
@@ -380,12 +380,14 @@ class BinaryDisk(object):
 
                 if plot3d:
                     self.plot3d(save=True, savename=f"disk_{self.system_time.number:.3f}.png", time=self.system_time)
-                if monitor_parameter in self.monitor:
-                    self.p_history.append(self.monitor[monitor_parameter]())
-                else:
-                    print(f"{monitor_parameter} is not yet a supported plottable parameter.", "\n")
-                    print(f"Please choose one from: {self.monitor.keys()}")
-                    return 
+
+                for param in monitor_parameter:
+                    if param in self.monitor:
+                        self.storage[param].append(self.monitor[param]())
+                    else:
+                        print(f"{param} is not yet a supported plottable parameter.", "\n")
+                        print(f"Please choose one from: {self.monitor.keys()}")
+                        return 
                     
             print("Done.")
             #self.gravity.stop() better to stop them manually when you want
