@@ -73,7 +73,8 @@ class BinaryDisk(object):
                   "system time": self.system_time}
 
         self.monitor = {"sigma_v": self.get_velocity_dispersion,
-                       "toomre": self.get_toomre}
+                       "toomre": self.get_toomre,
+                       "surface_density": self.get_surface_density}
         self.p_history = []
 
         if from_set is None:
@@ -294,6 +295,10 @@ class BinaryDisk(object):
     def get_toomre(self):
         r = max(self.all_particles.x.in_(units.au)) #mmm
         return self.disk_object.toomreQ(r.number)
+
+    def get_surface_density(self):
+        r = max(self.all_particles.x.in_(units.au)) # very suspicious stuff
+        return self.disk_object.sigma(r.number)
  
     def _channel(self):
         channel = {"from_stars": self.all_particles.new_channel_to(self.gravity.particles),
