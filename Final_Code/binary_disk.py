@@ -267,7 +267,7 @@ class BinaryDisk(object):
         except:
             unit = ""
             y = self.storage[parameter]
-        time = np.arange(0, len(self.p_history)/10, 0.1)| units.yr
+        time = np.arange(0, len(self.storage[parameter])/10, 0.1)| units.yr
         plt.figure()
         plt.title(f"{title} evolution over {len(self.storage[parameter])/10} years")
         plt.xlabel("Time (yr)")
