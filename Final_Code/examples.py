@@ -65,6 +65,8 @@ system.evolve(tend, monitor_parameter=["sigma_v", "surface_density"]) # even if 
 system.plot_parameter("sigma_v, ""Velocity dispersion")
 system.plot_parameter("surface_density, ""Surface Density")
 
+system.plot_system(save=True, save_name="energy_after", c=system.all_particles.u.number) # You can also plot color maps by changing your c value
+
 
 #------- How to export and import existing systems ---------#
 
