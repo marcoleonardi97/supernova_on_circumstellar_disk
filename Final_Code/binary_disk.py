@@ -181,7 +181,7 @@ class BinaryDisk(object):
 
 
 
-    def plot_system(self, show=False, part="all", save=False, save_name=None, time=None):
+    def plot_system(self, show=False, part="all", save=False, save_name=None, time=None, c='orange', **kwargs):
         """
         show: bool; show the plot, used when you're just looking at the system without evolving.
         part: list or str; select which source of particles to plot. Accepted inputs
@@ -191,25 +191,26 @@ class BinaryDisk(object):
         time: str; plot titles. 
         """
         plt.figure()
+        kwargs.setdefault('c', c)
         star = self.all_particles[self.all_particles.name=="Primary"]
         planet = self.all_particles[self.all_particles.name=="Secondary"]
         l = 2 * self.semimaj.number
         plt.xlim(-l,l)
         plt.ylim(-l,l)
         if "hydro" in part:
-            scatter(self.hydro.particles.x.in_(units.AU), self.hydro.particles.y.in_(units.AU), c='blue', alpha=0.5, s=10)
+            scatter(self.hydro.particles.x.in_(units.AU), self.hydro.particles.y.in_(units.AU), c='blue', alpha=0.5, s=10, **kwargs)
         if "gravity" in part:
-            scatter(self.gravity.particles.x.in_(units.AU), self.gravity.particles.y.in_(units.AU), c='yellow')
+            scatter(self.gravity.particles.x.in_(units.AU), self.gravity.particles.y.in_(units.AU), c='yellow', **kwargs)
         if "gas" in part:
-            scatter(self.gas_particles.x.in_(units.AU), self.gas_particles.y.in_(units.AU), c='blue', alpha=0.5, s=10)
+            scatter(self.gas_particles.x.in_(units.AU), self.gas_particles.y.in_(units.AU), c='blue', alpha=0.5, s=10, **kwargs)
         if "stars" in part:
             scatter(star.x, star.y, marker="*",c='r', s=120,label="Primary Star")
             scatter(planet.x, planet.y, marker='*', c='y',s=120, label="Secondary Star")
         if part == "all":
-            scatter(self.all_particles.x.in_(units.AU), self.all_particles.y.in_(units.AU), c='orange', alpha=0.5, s=10)
+            scatter(self.all_particles.x.in_(units.AU), self.all_particles.y.in_(units.AU), c='orange', alpha=0.5, s=10, **kwargs)
             scatter(star.x, star.y, marker="*",c='r', s=120,label="Primary Star")
             scatter(planet.x, planet.y, marker='*', c='y',s=120, label="Secondary Star")
-            
+
         plt.legend(loc='upper right')
         if time is not None:
             plt.title(f"Disk at {time.number:.2f} {time.unit}")
