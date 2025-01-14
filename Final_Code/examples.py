@@ -59,18 +59,11 @@ system.evolve(tend, plot=True, verbose=False)
 files = glob.glob("*.png") # This will select all of your pngs
 make_animation('binary_stars', files)
 
-# Plotting a parameter: (accepted input parameters: 'sigma_v': velocity dispersion, 'toomre': toomre Q stability criterion)
+# Plotting a parameter: (accepted input parameters: 'sigma_v': velocity dispersion, 'toomre': toomre Q stability criterion, "surface_density")
 system = BinaryDisk(rin = 4 | units.au, rout = 5 | units.au, components = "all") 
-system.evolve(tend, monitor_parameter="sigma_v") # Will monitor the velocity dispersion during the simulation
-system.plot_parameter("Velocity dispersion")
-
-# If now you want to plot a different parameter, you have to evolve the system again. 
-#There is only one temporary storage for a monitored parameter at a time
-system = BinaryDisk(rin = 4 | units.au, rout = 5 | units.au, components = "all") 
-system.evolve(tend, monitor_parameter="toomre") 
-system.plot_parameter("Toomre Q")
-
-
+system.evolve(tend, monitor_parameter=["sigma_v", "surface_density"]) # even if it's just one parameter you have to put it in a list, i.e. ["sigma_v"]
+system.plot_parameter("sigma_v, ""Velocity dispersion")
+system.plot_parameter("surface_density, ""Surface Density")
 
 
 #------- How to export and import existing systems ---------#
