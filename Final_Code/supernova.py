@@ -110,7 +110,7 @@ class Supernova(object):
     def bridge(self):
         bridged = bridge.Bridge(use_threading=False, method=SPLIT_4TH_S_M4)
         bridged.add_system(self.hydro, (self.external_code,))
-        bridged.add_system(self.external_code, (self.hydro,))
+        #bridged.add_system(self.external_code, (self.hydro,))
         bridged.timestep = self.hydro.parameters.timestep
         return bridged
 
@@ -130,7 +130,7 @@ class Supernova(object):
 
             # i give up Bridge won't transfer energy so i will (still particles don't move accordingly though)
             if self.external_object is not None:
-                f = 0.5
+                f = 0.75
                 for particle in self.external_object:
                     closest = sn.gas_without_core.find_closest_particle_to(*particle.position)
                     if (closest.position - particle.position).length().in_(units.au) < 1 | units.au:
