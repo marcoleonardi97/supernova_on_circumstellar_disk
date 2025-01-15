@@ -115,7 +115,7 @@ class BinaryDisk(object):
         self.hydro.parameters.integrate_entropy_flag = False
         self.hydro.parameters.timestep = self.gravity.parameters.timestep_parameter | units.yr #0.125 | units.yr
         self.hydro.parameters.verbosity = 1
-        self.hydro.parameters.eps_is_h_flag = True  # True = h_smooth is not constant, False=constant
+        self.hydro.parameters.eps_is_h_flag = True 
         eps = 0.1 | units.au
 
         self.hydro.parameters.gas_epsilon = eps 
