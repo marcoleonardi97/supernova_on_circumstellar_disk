@@ -128,7 +128,10 @@ class Supernova(object):
             print(f"Evolution: {time.in_(tend.unit)}")
             time += self.hydro.parameters.timestep
 
-            # i give up Bridge won't transfer energy so i will (still particles don't move accordingly though)
+            # i give up Bridge won't transfer energy so i will 
+            # note: the transfer happens to the external object obviously, which usually is BinaryDisk.all_particles, 
+            # but for some reason when you re-evolve the disk after the explosion you have to plot BinaryDisk.gas_particles to see them move...
+            # no idea why
             if self.external_object is not None:
                 f = 0.75
                 for particle in self.external_object:
