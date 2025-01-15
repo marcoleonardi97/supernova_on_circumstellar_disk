@@ -14,11 +14,11 @@ system = BinaryDisk(from_set=imported)
 
 # Let's have the supernova hit it
 pickle = "tmpow7eucrj/test.pkl"
-sn = Supernova(pickle=pickle, nparticles=10000, external_object=system.gas_particles)
-sn.evolve(2 | units.day, plot=True)
+sn = Supernova(pickle=pickle, nparticles=10000, external_object=system.all_particles)
+sn.evolve(2 | units.day, plot=False)
 
 # Now let's look at the effects on the disk...
-system.evolve(10 | units.yr, plot=True)
+system.evolve(100 | units.yr, display=["gas", "stars"], plot=True) # you have to display gas and stars instead of "all" for energy transfer for some reason
 
 
 # Make the animation (in jupyter lab you can run this between each evolution, i could also just make this a function)
