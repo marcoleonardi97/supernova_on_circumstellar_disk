@@ -14,7 +14,7 @@ system = BinaryDisk(from_set=imported)
 
 # Let's have the supernova hit it
 pickle = "tmpow7eucrj/test.pkl"
-sn = Supernova(pickle=pickle, nparticles=10000, external_object=system.all_particles)
+sn = Supernova(pickle=pickle, nparticles=10000, external_object=system.gas_particles)
 sn.evolve(2 | units.day, plot=True)
 
 # Now let's look at the effects on the disk...
