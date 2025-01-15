@@ -265,10 +265,7 @@ class Supernova(object):
             plt.close()
 
     def __str__(self):
-        print("Supernova class WIP")
-        return ""
-    
-
+        print("Supernova object at exploding at position (0, 0, 0).")
         if self.external_object is not None:
           print(f"The supernova is hitting a body at position:")
           print(self.external.object.position)
