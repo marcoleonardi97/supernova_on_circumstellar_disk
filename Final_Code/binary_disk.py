@@ -352,7 +352,6 @@ class BinaryDisk(object):
             time = 0 | units.yr
             dt =  code.timestep
             loops = 0
-            self.p_history = []
             
             print("Starting simulation...")
             while time < tend:
