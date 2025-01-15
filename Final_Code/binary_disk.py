@@ -341,10 +341,10 @@ class BinaryDisk(object):
             print(f"(Plots will looks still until the code evolves past that.)")
             
         if self.components == "stars":
-            self.evolve_gravity_only(tend=tend, part=display, plot=plot, plot3d=plot3d, 
+            self.evolve_gravity_only(tend=tend, plot=plot, plot3d=plot3d, 
                                      monitor_parameter=monitor_parameter, verbose=verbose)
         elif self.components == "disk":
-            self.evolve_hydro_only(tend=tend, part=display, plot=plot, plot3d=plot3d,
+            self.evolve_hydro_only(tend=tend, plot=plot, plot3d=plot3d,
                                      monitor_parameter=monitor_parameter, verbose=verbose)
         else:
             channel = self._channel()
