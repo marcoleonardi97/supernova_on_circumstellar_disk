@@ -282,7 +282,7 @@ class BinaryDisk(object):
             y = self.storage[parameter]
         time = np.arange(0, len(self.storage[parameter]) * self.gravity.parameters.timestep_parameter, self.gravity.parameters.timestep_parameter)| units.yr
         plt.figure()
-        plt.title(f"{title} evolution over {len(self.storage[parameter])/10} years")
+        plt.title(f"{title} evolution over {len(self.storage[parameter])*self.gravity.parameters.timestep_parameter} years")
         plt.xlabel("Time (yr)")
         plt.ylabel(f"{parameter} ({unit})")
         plot(time, y)
