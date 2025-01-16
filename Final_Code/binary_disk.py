@@ -199,16 +199,16 @@ class BinaryDisk(object):
         plt.xlim(-l,l)
         plt.ylim(-l,l)
         if "hydro" in part:
-            obj = scatter(self.hydro.particles.x.in_(units.AU), self.hydro.particles.y.in_(units.AU), c='blue', alpha=0.5, s=10, **kwargs)
+            obj = scatter(self.hydro.particles.x.in_(units.AU), self.hydro.particles.y.in_(units.AU), c, alpha=0.5, s=10, **kwargs)
         if "gravity" in part:
-            scatter(self.gravity.particles.x.in_(units.AU), self.gravity.particles.y.in_(units.AU), c='yellow', **kwargs)
+            scatter(self.gravity.particles.x.in_(units.AU), self.gravity.particles.y.in_(units.AU), c, **kwargs)
         if "gas" in part:
-            obj = scatter(self.gas_particles.x.in_(units.AU), self.gas_particles.y.in_(units.AU), c='blue', alpha=0.5, s=10, **kwargs)
+            obj = scatter(self.gas_particles.x.in_(units.AU), self.gas_particles.y.in_(units.AU), c, alpha=0.5, s=10, **kwargs)
         if "stars" in part:
             scatter(star.x, star.y, marker="*",c='r', s=120,label="Primary Star")
             scatter(planet.x, planet.y, marker='*', c='y',s=120, label="Secondary Star")
         if part == "all":
-            obj = scatter(self.all_particles.x.in_(units.AU), self.all_particles.y.in_(units.AU), c='orange', alpha=0.5, s=10, **kwargs)
+            obj = scatter(self.all_particles.x.in_(units.AU), self.all_particles.y.in_(units.AU), c, alpha=0.5, s=10, **kwargs)
             scatter(star.x, star.y, marker="*",c='r', s=120,label="Primary Star")
             scatter(planet.x, planet.y, marker='*', c='y',s=120, label="Secondary Star")
 
