@@ -1,6 +1,7 @@
 The final code uses two different custom classes to simulate all the systems we need: BinaryDisk() and Supernova().
 These allow for good customisation and debugging (i hope), simple evolution and for different methods of plotting.
 They are kind of documented in the examples folder.  
+Presentation WIP: https://docs.google.com/presentation/d/1C42A9Nemq37XhAS2Ti2RfmwunVOVZkHnxbtuOxaauZY/edit?usp=sharing
 
 -------------------------------
 
