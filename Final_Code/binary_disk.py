@@ -288,7 +288,7 @@ class BinaryDisk(object):
         try:
             plot(time, y)
         except:
-            plot(time[:len(y), y]
+            plot(time[:len(y)], y)
         plt.savefig(f"{parameter}_plot.png")
         plt.show()
 
