@@ -27,10 +27,13 @@ from amuse.io import read_set_from_file
 from numba import jit # Currently not used
 
 
+# The BinaryDisk class allows you to make a protoplanetary disk in a single or binary star system,
+# evolve each system individually or together,
+# backup to .hdf5 during evolution,
+# 2d or 3d plotting,  
+# moitor and plot surface density, velocity dispersion, toomre Q parameter
 
-# In order to debug the individual codes, i added the option to create the single binary pair or the single disk,
-# and to use only the gravity code or only the hydro code if needed. 
-# When you initiate the class, just call: components = "all" or "disk" or "stars".
+# When you initiate the class, call: components = "all" (default) or "disk" or "stars".
 
 
 # the following fixes are highly recommended
@@ -101,7 +104,7 @@ class BinaryDisk(object):
         self.gravity = Ph4(self.converter)
         self.gravity.particles.add_particles(self.all_particles)
         self.gravity.parameters.timestep_parameter = 0.1 #0.07 is best but whatever
-        self.gravity.parameters.epsilon_squared = 1./self.ndisk**(2./3) | units.au**2  # 0.01 au **2 with 1000 particles, sometimes it works sometimes it doesn't
+        self.gravity.parameters.epsilon_squared = 1./self.ndisk**(2./3) | units.au**2  # 0.01 au **2 with 1000 particles
 
         # Hydro
         
@@ -113,15 +116,11 @@ class BinaryDisk(object):
         self.hydro.parameters.gamma = 1
         self.hydro.parameters.isothermal_flag = True
         self.hydro.parameters.integrate_entropy_flag = False
-        self.hydro.parameters.timestep = self.gravity.parameters.timestep_parameter | units.yr #0.125 | units.yr
+        self.hydro.parameters.timestep = self.gravity.parameters.timestep_parameter | units.yr #0.1 | units.yr
         self.hydro.parameters.verbosity = 1
         self.hydro.parameters.eps_is_h_flag = True 
         eps = 0.1 | units.au
-
         self.hydro.parameters.gas_epsilon = eps 
-        #self.hydro.parameters.n_smooth_tol = 0.1
-        #self.hydro.parameters.sph_h_const = eps * 5
-
 
         # Disk
         self.hydro.particles.add_particles(self.gas_particles)
@@ -190,29 +189,34 @@ class BinaryDisk(object):
         save: bool; flag to save plots
         save_name: str; file names
         time: str; plot titles. 
+        kwargs: keyword arguments you can normally use in scatter()
         """
         plt.figure()
         kwargs.setdefault('c', c)
         star = self.all_particles[self.all_particles.name=="Primary"]
         planet = self.all_particles[self.all_particles.name=="Secondary"]
-        l = 2 * self.semimaj.number
+        l = 2 * self.semimaj.in_(units.au).number + (0.5*self.particles[0].position.length().in_(units.au).number)
         plt.xlim(-l,l)
         plt.ylim(-l,l)
         if "hydro" in part:
-            scatter(self.hydro.particles.x.in_(units.AU), self.hydro.particles.y.in_(units.AU), c='blue', alpha=0.5, s=10, **kwargs)
+            obj = scatter(self.hydro.particles.x.in_(units.AU), self.hydro.particles.y.in_(units.AU), c='blue', alpha=0.5, s=10, **kwargs)
         if "gravity" in part:
             scatter(self.gravity.particles.x.in_(units.AU), self.gravity.particles.y.in_(units.AU), c='yellow', **kwargs)
         if "gas" in part:
-            scatter(self.gas_particles.x.in_(units.AU), self.gas_particles.y.in_(units.AU), c='blue', alpha=0.5, s=10, **kwargs)
+            obj = scatter(self.gas_particles.x.in_(units.AU), self.gas_particles.y.in_(units.AU), c='blue', alpha=0.5, s=10, **kwargs)
         if "stars" in part:
             scatter(star.x, star.y, marker="*",c='r', s=120,label="Primary Star")
             scatter(planet.x, planet.y, marker='*', c='y',s=120, label="Secondary Star")
         if part == "all":
-            scatter(self.all_particles.x.in_(units.AU), self.all_particles.y.in_(units.AU), c='orange', alpha=0.5, s=10, **kwargs)
+            obj = scatter(self.all_particles.x.in_(units.AU), self.all_particles.y.in_(units.AU), c='orange', alpha=0.5, s=10, **kwargs)
             scatter(star.x, star.y, marker="*",c='r', s=120,label="Primary Star")
             scatter(planet.x, planet.y, marker='*', c='y',s=120, label="Secondary Star")
 
         plt.legend(loc='upper right')
+        
+        if not type(c) == str:
+            plt.colorbar(obj)
+            
         if time is not None:
             plt.title(f"Disk at {time.number:.2f} {time.unit}")
 
@@ -224,7 +228,12 @@ class BinaryDisk(object):
             plt.close()
     
     def plot3d(self, show=False, save=False, savename=None, time=None):
-    
+        """
+        show: bool; show the plot, used when you're just looking at the system without evolving.
+        save: bool; flag to save plots
+        save_name: str; file names
+        time: str; plot titles. 
+        """
         x = self.all_particles.x.in_(units.au)
         y = self.all_particles.y.in_(units.au)
         z = self.all_particles.z.in_(units.au)
@@ -239,7 +248,6 @@ class BinaryDisk(object):
         ax.set_xlim(-l,l)
         ax.set_ylim(-l,l)
         ax.set_zlim(-l,l)
-    
     
         ax.scatter(x.number, y.number, z.number, s=1, c='blue', marker='o', alpha=0.5)  # Adjust size and color as needed
         ax.scatter(star.x.number, star.y.number, star.z.number, marker='*', c='r', s=120, label='Primary Star')
@@ -259,6 +267,10 @@ class BinaryDisk(object):
             plt.close()
 
     def plot_parameter(self, parameter, title):
+        """
+        parameter: str; parameter to plot, only accepts input from the self.monitor dict
+        title: str; title of the plot
+        """
         if len(self.storage[parameter]) == 0:
             print("No parameter saved.")
             return
@@ -279,7 +291,8 @@ class BinaryDisk(object):
 
     def move_system(self, new_position):
         """
-        Move the whole system  to a new position
+        Move the whole system to a new position: 
+            this is additive! _if you run it twice you move it twice_
         """
         unit = new_position.unit
         x, y, z = new_position.number
@@ -328,7 +341,7 @@ class BinaryDisk(object):
         @tend: time to evolve to.
         @plot: bool; save .pngs for each frame
         @plot3d: bool; save .pngs of 3d plots for each frame. 
-        @monitor_parameter: ["sigma_v"]; 
+        @monitor_parameter: ["sigma_v", "surface_density", "toomre"]; 
         @display: ["gas", "hydro", "stars", "gravity"] or "all"; flags what source to use for the plot
         @backup: bool; flags whether period backups of the system should be made during evolution
         @backup_file: str; backup file name
@@ -392,7 +405,7 @@ class BinaryDisk(object):
                         return 
                     
             print("Done.")
-            #self.gravity.stop() better to stop them manually when you want
+            #self.gravity.stop() better to stop them manually when you want, in case we plot before and aftrer the SN
             #self.hydro.stop()
 
     def evolve_gravity_only(self, tend, part=["stars", "gravity"], plot=False, plot3d=False, monitor_parameter=None, verbose=False):
