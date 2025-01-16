@@ -133,7 +133,7 @@ class Supernova(object):
             # but for some reason when you re-evolve the disk after the explosion you have to plot BinaryDisk.gas_particles to see them move...
             # no idea why
             if self.external_object is not None:
-                f = 0.75
+                f = 0.75 # currently changing this to some physical value fraction
                 for particle in self.external_object:
                     closest = sn.gas_without_core.find_closest_particle_to(*particle.position)
                     if (closest.position - particle.position).length().in_(units.au) < 1 | units.au:
@@ -145,15 +145,11 @@ class Supernova(object):
                         closest.vx -= f * particle.vx
                         closest.vy -= f * particle.vy
                         closest.vz -= f * particle.vz
-
-                
-                
+                        
                 self.external_code.particles.new_channel_to(self.external_object).copy()
                 self.hydro.particles.new_channel_to(self.gas_without_core).copy()
                 self.gas_without_core.new_channel_to(self.external_object).copy_attributes(["u", "u", "vx", "vy",
                                                                                            "vz", "mass"])
-                
-                
             if plot:
                 self.plot_system(show=False, save=True, time=time)
     
@@ -175,7 +171,6 @@ class Supernova(object):
             return
             
         while time < tend:
-            #self.hydro.evolve_model(time)
             self.external_code.evolve_model(time)
             print(f"Evolution: {time.in_(tend.unit)}")
             time += self.external_code.parameters.timestep
@@ -201,7 +196,7 @@ class Supernova(object):
         if self.external_object is None:
             l = 10
         else: 
-            l = max(self.external_object.x.in_(units.au)).number * 2
+            l = max(self.external_object.x.in_(units.au)).number * 2 #maybe the *2 is eccessive
         plt.xlim(-l,l)
         plt.ylim(-l,l)
     
@@ -222,8 +217,6 @@ class Supernova(object):
         if save:
             plt.savefig(f"nova_{time.number:.3f}.png")
             plt.close() 
-
-
             
 
     def plot3d(self, show=False, save=False, time=None):
