@@ -285,7 +285,10 @@ class BinaryDisk(object):
         plt.title(f"{title} evolution over {len(self.storage[parameter])*self.gravity.parameters.timestep_parameter} years")
         plt.xlabel("Time (yr)")
         plt.ylabel(f"{parameter} ({unit})")
-        plot(time, y)
+        try:
+            plot(time, y)
+        except:
+            plot(time[:len(y), y]
         plt.savefig(f"{parameter}_plot.png")
         plt.show()
 
