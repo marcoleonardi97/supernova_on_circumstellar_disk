@@ -20,6 +20,11 @@ from mpl_toolkits.mplot3d import Axes3D
 
 os.environ["OMPI_MCA_rmaps_base_oversubscribe"]="true"
 options.GlobalOptions.instance().override_value_for_option("polling_interval_in_milliseconds", 10)
+
+
+# Class to simulate a supernova explosion over time and its interaction with an external object.
+# Call this with external_object = BinaryDisk().all_particles to have interact with the disk system
+
 class Supernova(object):
     def __init__(self, pickle=None, mass=10|units.MSun, nparticles=1000, external_object=None):
         self.pickle = pickle
@@ -101,6 +106,9 @@ class Supernova(object):
             self.external_code.particles.add_particles(self.external_object)
 
     def explode(self, explosion_energy=1.0e+51|units.erg, exploding_region=1|units.RSun):
+        """
+        Inject typical supernova energy amount into a confined region of the SN gas particles. 
+        """
         inner = self.gas_without_core.select(lambda pos: pos.length_squared() < exploding_region**2, ["position"])
         print(len(inner), "innermost particles selected.")
         print("Adding", explosion_energy / inner.total_mass(), "of supernova " \
@@ -115,6 +123,15 @@ class Supernova(object):
         return bridged
 
     def evolve(self, tend, plot=False, plot3d = False, verbose=False):
+        """
+        Evolution function. Works well over a few days after the explosion.
+        Interaction with the external object is manually resolved.
+        
+        tend; time with units
+        plot; bool - make plots for each frame
+        plot3d; bool - make 3d plots for each frame
+        verbose; bool - print particles position and energy to see if they are evolving correctly
+        """
         time = 0 | units.day
         
         if self.external_object is None:
@@ -133,7 +150,7 @@ class Supernova(object):
             # but for some reason when you re-evolve the disk after the explosion you have to plot BinaryDisk.gas_particles to see them move...
             # no idea why
             if self.external_object is not None:
-                f = 0.75 # currently changing this to some physical value fraction
+                f = 0.75 # currently changing this to some physical value fraction (in the form of epsilon * v/v m/m )
                 for particle in self.external_object:
                     closest = sn.gas_without_core.find_closest_particle_to(*particle.position)
                     if (closest.position - particle.position).length().in_(units.au) < 1 | units.au:
@@ -164,6 +181,9 @@ class Supernova(object):
         print("Done.")
 
     def evolve_external_only(self, tend, plot=False, plot3d = False, verbose=False):
+        """
+        Evolve the external object only to see the effects of the supernova. 
+        """
         time = 0 | units.yr
         
         if self.external_object is None:
