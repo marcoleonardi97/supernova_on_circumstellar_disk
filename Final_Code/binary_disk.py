@@ -192,7 +192,7 @@ class BinaryDisk(object):
         kwargs: keyword arguments you can normally use in scatter()
         """
         plt.figure()
-        kwargs.setdefault('c', c)
+        kwargs.setdefault('c', c) # Setting a default color just to have the option to plot a color map 
         star = self.all_particles[self.all_particles.name=="Primary"]
         planet = self.all_particles[self.all_particles.name=="Secondary"]
         l = 2 * self.semimaj.in_(units.au).number + (0.5*self.particles[0].position.length().in_(units.au).number)
@@ -266,7 +266,7 @@ class BinaryDisk(object):
             plt.savefig(savename)
             plt.close()
 
-    def plot_parameter(self, parameter, title):
+    def plot_parameter(self, parameter, title=""):
         """
         parameter: str; parameter to plot, only accepts input from the self.monitor dict
         title: str; title of the plot
@@ -274,7 +274,7 @@ class BinaryDisk(object):
         if len(self.storage[parameter]) == 0:
             print("No parameter saved.")
             return
-        try:
+        try: # Here we do try and except because not every parameter might have units
             unit = self.storage[parameter][0].unit
             y = [i.number for i in self.storage[parameter]] | unit
         except:
@@ -335,7 +335,7 @@ class BinaryDisk(object):
         gravhydro.timestep = self.hydro.parameters.timestep
         return gravhydro
         
-    #@jit(nopython=True)
+    #@jit(nopython=True) should maybe fix this, but it doesn't work with f formatting f"{}"
     def evolve(self, tend, plot=False, plot3d=False, monitor_parameter=None, display="all", backup = False, 
                backup_file = f"simulation_backup.hdf5", backup_dt = 10, verbose=False):
 
@@ -414,7 +414,7 @@ class BinaryDisk(object):
 
     def evolve_gravity_only(self, tend, part=["stars", "gravity"], plot=False, plot3d=False, monitor_parameter=None, verbose=False):
         """
-        Same as normal evolve but using only Ph4. 
+        Same as normal evolve but using only Ph4. All of the following are really just useful for debugging
         This will be called automatically if the class is initialised with components="stars".
         """
         channel = self._channel()
