@@ -31,7 +31,7 @@ class Supernova(object):
         self.mass = mass
         self.nparticles = nparticles
         self.external_object = external_object
-        self.energy_counter = 0
+        self.energy_counter = 0 | units.m**2 / units.s**2
         self.particles = Particles()
         self.gas_particles = Particles()
 
