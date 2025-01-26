@@ -194,7 +194,8 @@ class Supernova(object):
                 print("Local self.particles (core): ", np.mean(self.particles.x.in_(units.au)))
                 print("Local self.gas_particles (gas): ", np.mean(self.gas_particles.x.in_(units.au)))
                 print(f"{self.energy_counter:.2f} of energy was transferred from the supernova particles to the disk.")    
-            print(f"{self.energy_counter:.2f} of energy was transferred from the supernova particles to the disk.")    
+                
+        print(f"{self.energy_counter:.2f} of energy was transferred from the supernova particles to the disk.")    
                  
                  
         print("Done.")
