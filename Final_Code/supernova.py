@@ -106,7 +106,14 @@ class Supernova(object):
             self.external_code.parameters.timestep = 0.1 | units.yr
             self.external_code.particles.add_particles(self.external_object)
 
-    def get_interaction_fraction(self, particle1, particle2):
+    def _transfer_energy(self, distance):
+        limit = 0.5 | units.au # unfortunately has to be very high when working with few particles  
+        epsilon = 1 # efficiency of the transfer
+        # epsilon = self._get_interaction_efficiency()
+        f = epsilon * np.exp(-(distance/limit)**2)
+        return f
+
+    def _get_interaction_efficiency(self):
     """
     Manual energy transfer fraction between SN and disk particles
     """
@@ -114,9 +121,7 @@ class Supernova(object):
         disk_r = 1 | units.cm
         rho_sn = 10e-6 | (units.kg / units.m**3)
         disk_m = self.external_object.mass.sum() / len(self.external_object)
-        disk_esc_vel = (2*constants.G* self.external_object.mass.sum() / particle1.position.length())**0.5
-        vel_rel = (particle1.velocity - particle2.velocity).length()
-        f = (np.pi * disk_r**2 * rho_sn / self.external_object.mass.sum()) * vel_rel/max(vel_rel, disk_esc_vel)
+        f = (np.pi * disk_r**2 * rho_sn / self.external_object.mass.sum())
         return f.number
         
 
@@ -165,19 +170,19 @@ class Supernova(object):
             # but for some reason when you re-evolve the disk after the explosion you have to plot BinaryDisk.gas_particles to see them move...
             # no idea why
             if self.external_object is not None:
-                f = self.get_interaction_fraction(particle, closest)
-                for particle in self.external_object:
-                    closest = sn.gas_without_core.find_closest_particle_to(*particle.position)
-                    if (closest.position - particle.position).length().in_(units.au) < 1 | units.au:
-                        particle.u += f * closest.u
-                        particle.vx += f  * closest.vx
-                        particle.vy += f * closest.vy
-                        particle.vy += f * closest.vz
-                        closest.u -= f * particle.u
-                        closest.vx -= f * particle.vx
-                        closest.vy -= f * particle.vy
-                        closest.vz -= f * particle.vz
-                        self.energy_counter += f * closest.u
+                for disk_particle in self.external_object:
+                    dist = np.linalg.norm((self.gas_without_core.position.value_in(units.au) - disk_particle.position.value_in(units.au)), axis = 1) # .length() doesn't work well here for some reason
+                    f = self._transfer_energy(dist | units.au)
+                    #f = self.transfer_energy((self.gas_without_core.position - disk_particle.position).length().in_(units.au))
+                    disk_particle.u += np.sum(f * self.gas_without_core.u)
+                    disk_particle.vx += np.sum(f * self.gas_without_core.vx)
+                    disk_particle.vy += np.sum(f * self.gas_without_core.vy)
+                    disk_particle.vz += np.sum(f * self.gas_without_core.vz)
+                    self.gas_particles.u -= f * disk_particle.u
+                    self.gas_without_core.vx -= f * disk_particle.vx
+                    self.gas_without_core.vy -= f * disk_particle.vy
+                    self.gas_without_core.vz -= f * disk_particle.vz
+                    self.energy_counter += np.sum(f * self.gas_without_core.u)
                         
                 self.external_code.particles.new_channel_to(self.external_object).copy()
                 self.hydro.particles.new_channel_to(self.gas_without_core).copy()
@@ -193,11 +198,9 @@ class Supernova(object):
                 print("Hydro particles: ", np.mean(self.hydro.particles.x.in_(units.au)))
                 print("Local self.particles (core): ", np.mean(self.particles.x.in_(units.au)))
                 print("Local self.gas_particles (gas): ", np.mean(self.gas_particles.x.in_(units.au)))
-                print(f"{self.energy_counter:.2f} of energy was transferred from the supernova particles to the disk.")    
+                print(f"{self.energy_counter} of energy was transferred from the supernova particles to the disk.")    
                 
-        print(f"{self.energy_counter:.2f} of energy was transferred from the supernova particles to the disk.")    
-                 
-                 
+        print(f"{self.energy_counter.number:.2e} {self.energy_counter.unit} of energy was transferred from the supernova particles to the disk.")    
         print("Done.")
 
     def evolve_external_only(self, tend, plot=False, plot3d = False, verbose=False):
