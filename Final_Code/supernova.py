@@ -31,6 +31,7 @@ class Supernova(object):
         self.mass = mass
         self.nparticles = nparticles
         self.external_object = external_object
+        self.energy_counter = 0
         self.particles = Particles()
         self.gas_particles = Particles()
 
@@ -105,6 +106,20 @@ class Supernova(object):
             self.external_code.parameters.timestep = 0.1 | units.yr
             self.external_code.particles.add_particles(self.external_object)
 
+    def get_interaction_fraction(self, particle1, particle2):
+    """
+    Manual energy transfer fraction between SN and disk particles
+    """
+        epsilon = 1
+        disk_r = 1 | units.cm
+        rho_sn = 10e-6 | (units.kg / units.m**3)
+        disk_m = self.external_object.mass.sum() / len(self.external_object)
+        disk_esc_vel = (2*constants.G* self.external_object.mass.sum() / particle1.position.length())**0.5
+        vel_rel = (particle1.velocity - particle2.velocity).length()
+        f = (np.pi * disk_r**2 * rho_sn / self.external_object.mass.sum()) * vel_rel/max(vel_rel, disk_esc_vel)
+        return f.number
+        
+
     def explode(self, explosion_energy=1.0e+51|units.erg, exploding_region=1|units.RSun):
         """
         Inject typical supernova energy amount into a confined region of the SN gas particles. 
@@ -150,7 +165,7 @@ class Supernova(object):
             # but for some reason when you re-evolve the disk after the explosion you have to plot BinaryDisk.gas_particles to see them move...
             # no idea why
             if self.external_object is not None:
-                f = 0.75 # currently changing this to some physical value fraction (in the form of epsilon * v/v m/m )
+                f = self.get_interaction_fraction(particle, closest)
                 for particle in self.external_object:
                     closest = sn.gas_without_core.find_closest_particle_to(*particle.position)
                     if (closest.position - particle.position).length().in_(units.au) < 1 | units.au:
@@ -162,6 +177,7 @@ class Supernova(object):
                         closest.vx -= f * particle.vx
                         closest.vy -= f * particle.vy
                         closest.vz -= f * particle.vz
+                        self.energy_counter += f * closest.u
                         
                 self.external_code.particles.new_channel_to(self.external_object).copy()
                 self.hydro.particles.new_channel_to(self.gas_without_core).copy()
@@ -177,6 +193,9 @@ class Supernova(object):
                 print("Hydro particles: ", np.mean(self.hydro.particles.x.in_(units.au)))
                 print("Local self.particles (core): ", np.mean(self.particles.x.in_(units.au)))
                 print("Local self.gas_particles (gas): ", np.mean(self.gas_particles.x.in_(units.au)))
+                print(f"{self.energy_counter:.2f} of energy was transferred from the supernova particles to the disk.")    
+            print(f"{self.energy_counter:.2f} of energy was transferred from the supernova particles to the disk.")    
+                 
                  
         print("Done.")
 
