@@ -108,8 +108,7 @@ class Supernova(object):
 
     def _transfer_energy(self, distance):
         limit = 0.5 | units.au # unfortunately has to be very high when working with few particles  
-        epsilon = 1 # efficiency of the transfer
-        # epsilon = self._get_interaction_efficiency()
+        epsilon = self._get_interaction_efficiency()
         f = epsilon * np.exp(-(distance/limit)**2)
         return f
 
@@ -118,7 +117,7 @@ class Supernova(object):
     Manual energy transfer fraction between SN and disk particles
     """
         epsilon = 1
-        disk_r = 1 | units.cm
+        disk_r = 200 | units.m # if you change this, keep it in meters
         rho_sn = 10e-6 | (units.kg / units.m**3)
         disk_m = self.external_object.mass.sum() / len(self.external_object)
         f = (np.pi * disk_r**2 * rho_sn / self.external_object.mass.sum())
