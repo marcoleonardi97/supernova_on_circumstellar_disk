@@ -113,15 +113,15 @@ class Supernova(object):
         return f
 
     def _get_interaction_efficiency(self):
-    """
-    Manual energy transfer fraction between SN and disk particles
-    """
-        epsilon = 1
-        disk_r = 200 | units.m # if you change this, keep it in meters
-        rho_sn = 10e-6 | (units.kg / units.m**3)
-        disk_m = self.external_object.mass.sum() / len(self.external_object)
-        f = (np.pi * disk_r**2 * rho_sn / self.external_object.mass.sum())
-        return f.number
+        """
+        Manual energy transfer fraction between SN and disk particles
+        """
+            epsilon = 1
+            disk_r = 200 | units.m # if you change this, keep it in meters
+            rho_sn = 10e-6 | (units.kg / units.m**3)
+            disk_m = self.external_object.mass.sum() / len(self.external_object)
+            f = (np.pi * disk_r**2 * rho_sn / self.external_object.mass.sum())
+            return f.number
         
 
     def explode(self, explosion_energy=1.0e+51|units.erg, exploding_region=1|units.RSun):
